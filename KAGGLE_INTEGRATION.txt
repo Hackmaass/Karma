@@ -1,0 +1,99 @@
+# Kaggle Data Integration Guide
+
+This document explains how to replace the hardcoded mock data in KarmaOS with real datasets downloaded from Kaggle (or any other external source) for demo purposes.
+
+## Step 1: Download and Place Your Data
+
+1. Download your dataset from Kaggle (e.g., a CSV or JSON file containing HR data, employee performance metrics, or ATS pipeline data).
+2. Place the downloaded files into the `public/data/` directory of this project. 
+   *(Note: You may need to create the `data` folder inside `public` if it doesn't exist).*
+
+   Example structure:
+   ```
+   public/
+     data/
+       kaggle_workforce.json
+       kaggle_employees.csv
+       kaggle_talent.json
+   ```
+
+## Step 2: Update `src/lib/dataService.ts`
+
+The application uses an abstraction layer located at `src/lib/dataService.ts` to fetch data before sending it to the Gemini ML models.
+
+Open `src/lib/dataService.ts` and modify the fetch functions to point to your new files.
+
+### Example: Loading JSON Data
+
+If your Kaggle dataset is in JSON format, you can fetch it directly:
+
+```typescript
+export async function fetchWorkforceData() {
+  try {
+    const response = await fetch('/data/kaggle_workforce.json');
+    const data = await response.json();
+    
+    // Optional: Map the Kaggle data schema to the structure expected by the app
+    return {
+      teams: data.teams,
+      recruiting: data.recruiting,
+      alerts: data.alerts
+    };
+  } catch (error) {
+    console.error("Failed to load Kaggle data:", error);
+    return mockWorkforceData; // Fallback
+  }
+}
+```
+
+### Example: Loading CSV Data
+
+If your Kaggle dataset is a CSV file, you will need to parse it. We recommend installing `papaparse` (`npm install papaparse`) to easily convert CSV to JSON in the browser.
+
+```typescript
+import Papa from 'papaparse';
+
+export async function fetchEmployeeData(id: string) {
+  try {
+    const response = await fetch('/data/kaggle_employees.csv');
+    const csvText = await response.text();
+    
+    return new Promise((resolve) => {
+      Papa.parse(csvText, {
+        header: true,
+        complete: (results) => {
+          // Find the specific employee by ID
+          const employee = results.data.find((emp: any) => emp.EmployeeID === id);
+          
+          // Map the CSV columns to the expected structure
+          resolve({
+            name: employee.FullName,
+            role: employee.JobTitle,
+            hiringProfile: {
+              technicalScore: employee.TechScore,
+              dna: employee.PersonalityType,
+              strengths: employee.Strengths.split(',')
+            },
+            currentWorkData: {
+              deepWorkRatio: employee.DeepWorkPercent + "%",
+              meetingLoad: employee.MeetingHours + "h",
+              communication: employee.CommStyle,
+              recentOutput: employee.RecentPerformance,
+              focusBlocks: employee.FocusBlocks
+            }
+          });
+        }
+      });
+    });
+  } catch (error) {
+    console.error("Failed to load Kaggle CSV:", error);
+    return mockEmployees[id] || mockEmployees['1'];
+  }
+}
+```
+
+## Step 3: Test the Integration
+
+Once you have updated `dataService.ts`, the UI components (`Dashboard.tsx`, `EmployeeView.tsx`, `TalentIntelligence.tsx`) will automatically start using your Kaggle data. 
+
+The Gemini ML models will analyze whatever data structure you pass to them, so as long as you map the Kaggle data to a somewhat readable JSON object, the AI will generate insights based on your custom dataset!

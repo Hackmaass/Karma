@@ -1,26 +1,20 @@
-# KarmaOS - Core User Experience (The Story)
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
 
-## "When a founder opens KarmaOS for the first time"
+# Run and deploy your AI Studio app
 
-### 1. What they see immediately (0-5 seconds)
-The founder does not see a wall of charts, a list of tasks, or a generic "productivity score." 
-Instead, they see a clean, calm interface with a single, human-readable sentence at the top:
-*"Good morning. Your team is highly focused today, but engineering is currently blocked on design approvals for the new checkout flow."*
+This contains everything you need to run your app locally.
 
-Below this, three key metrics are displayed not as raw numbers, but as statements of health:
-- Deep Work: "Team is finding time to focus."
-- Coordination Load: "Meeting overhead is healthy."
-- Overload Risk: "Sarah M. is working late."
+View your app in AI Studio: https://ai.studio/apps/0c48ce4b-17f6-4c4d-b456-b195c7719db0
 
-### 2. What they understand within 5 seconds
-They instantly understand the **context** of their organization. They don't have to interpret data; the AI has already done the interpretation. They know exactly where the friction is (design approvals) and who needs support (Sarah M.).
+## Run Locally
 
-### 3. What action they take next
-Because the insight is actionable, the founder clicks "View Blockers" or opens the Karma Assistant and asks, *"What exactly is holding up the design approvals?"* 
-Alternatively, seeing Sarah's overload risk, they navigate to her Employee View to see that she has been pulled into 18 meetings in 3 days, prompting the founder to reach out and help her clear her calendar.
+**Prerequisites:**  Node.js
 
-### 4. What makes them trust the product
-Trust is built through **restraint and accuracy**. 
-- **Restraint:** KarmaOS doesn't overwhelm them with irrelevant data. It only speaks when it has something meaningful to say.
-- **Accuracy:** The insights match their intuition but provide the objective proof they lacked. When KarmaOS says engineering is blocked, it's because it actually observed the stalled pull requests and the corresponding Slack chatter, not because someone forgot to update a Jira ticket.
-- **Privacy:** The interface never shows *what* people are saying, only *how* they are working. This architectural honesty reassures the founder that they are using a tool for intelligence, not surveillance.
+
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`

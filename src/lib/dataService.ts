@@ -26,7 +26,24 @@ export const mockWorkforceData = {
   ]
 };
 
-export const mockEmployees: Record<string, any> = {
+interface MockEmployee {
+  name: string;
+  role: string;
+  hiringProfile: {
+    technicalScore: string;
+    dna: string;
+    strengths: string[];
+  };
+  currentWorkData: {
+    deepWorkRatio: string;
+    meetingLoad: string;
+    communication: string;
+    recentOutput: string;
+    focusBlocks: string;
+  };
+}
+
+export const mockEmployees: Record<string, MockEmployee> = {
   '1': {
     name: 'Alex Chen',
     role: 'Senior Engineer',

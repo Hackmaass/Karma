@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { GoogleGenAI } from '@google/genai';
 
 // Initialize Gemini API
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 type Message = { role: 'user' | 'assistant'; content: string };
 

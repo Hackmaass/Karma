@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import React from 'react';
 import { Bot, UserCheck, Clock, BrainCircuit, Loader2 } from 'lucide-react';
 import { generateTalentInsights, TalentInsights } from '../lib/gemini';
 import { fetchTalentData } from '../lib/dataService';
@@ -75,7 +76,7 @@ export default function TalentIntelligence() {
       {/* Active Roles (Insight-first, not a Kanban board) */}
       <section className="grid md:grid-cols-2 gap-6">
         {insights?.roles.map((role, i) => (
-          <RoleCard 
+          <RoleCard
             key={i}
             title={role.title}
             status={role.status}
@@ -84,11 +85,11 @@ export default function TalentIntelligence() {
             delay={0.2 + (i * 0.1)}
           />
         )) || (
-          <>
-            <RoleCard title="Senior Backend Engineer" status="Interviewing" insight="Agent completed 12 technical screens. 3 candidates advanced to human review." dnaMatch="Maker (High Focus)" delay={0.2} />
-            <RoleCard title="Product Marketing Manager" status="Sourcing" insight="Agent is adjusting outreach messaging. Initial response rate was below 15% threshold." dnaMatch="Synchronizer (High Coordination)" delay={0.3} />
-          </>
-        )}
+            <>
+              <RoleCard title="Senior Backend Engineer" status="Interviewing" insight="Agent completed 12 technical screens. 3 candidates advanced to human review." dnaMatch="Maker (High Focus)" delay={0.2} />
+              <RoleCard title="Product Marketing Manager" status="Sourcing" insight="Agent is adjusting outreach messaging. Initial response rate was below 15% threshold." dnaMatch="Synchronizer (High Coordination)" delay={0.3} />
+            </>
+          )}
       </section>
 
       {/* Interview Quality Analysis */}
@@ -102,24 +103,24 @@ export default function TalentIntelligence() {
           <div className="bg-white border border-black/[0.04] rounded-3xl overflow-hidden shadow-sm">
             <div className="divide-y divide-black/[0.04]">
               {insights?.interviewIntelligence.map((intel, i) => (
-                <InsightRow 
+                <InsightRow
                   key={i}
                   icon={
                     intel.type === 'success' ? <BrainCircuit className="w-4 h-4 text-emerald-500" /> :
-                    intel.type === 'warning' ? <Clock className="w-4 h-4 text-amber-500" /> :
-                    <UserCheck className="w-4 h-4 text-black/40" />
+                      intel.type === 'warning' ? <Clock className="w-4 h-4 text-amber-500" /> :
+                        <UserCheck className="w-4 h-4 text-black/40" />
                   }
                   title={intel.title}
                   desc={intel.desc}
                   meta={intel.meta}
                 />
               )) || (
-                <>
-                  <InsightRow icon={<BrainCircuit className="w-4 h-4 text-emerald-500" />} title="Strong Signal Detected" desc="Candidate 'David L.' demonstrated exceptional system design reasoning in the AI technical screen." meta="Score: 94/100" />
-                  <InsightRow icon={<Clock className="w-4 h-4 text-amber-500" />} title="Scheduling Friction" desc="Agent is struggling to find overlapping time between Candidate 'Elena M.' and the engineering panel." meta="Action Required" />
-                  <InsightRow icon={<UserCheck className="w-4 h-4 text-black/40" />} title="Work DNA Match" desc="Candidate 'James T.' matches the communication patterns of your most successful PMs." meta="High Confidence" />
-                </>
-              )}
+                  <>
+                    <InsightRow icon={<BrainCircuit className="w-4 h-4 text-emerald-500" />} title="Strong Signal Detected" desc="Candidate 'David L.' demonstrated exceptional system design reasoning in the AI technical screen." meta="Score: 94/100" />
+                    <InsightRow icon={<Clock className="w-4 h-4 text-amber-500" />} title="Scheduling Friction" desc="Agent is struggling to find overlapping time between Candidate 'Elena M.' and the engineering panel." meta="Action Required" />
+                    <InsightRow icon={<UserCheck className="w-4 h-4 text-black/40" />} title="Work DNA Match" desc="Candidate 'James T.' matches the communication patterns of your most successful PMs." meta="High Confidence" />
+                  </>
+                )}
             </div>
           </div>
         </motion.div>
@@ -128,7 +129,15 @@ export default function TalentIntelligence() {
   );
 }
 
-function RoleCard({ title, status, insight, dnaMatch, delay }: any) {
+interface RoleCardProps {
+  title: string;
+  status: string;
+  insight: string;
+  dnaMatch: string;
+  delay: number;
+}
+
+function RoleCard({ title, status, insight, dnaMatch, delay }: RoleCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -146,7 +155,14 @@ function RoleCard({ title, status, insight, dnaMatch, delay }: any) {
   );
 }
 
-function InsightRow({ icon, title, desc, meta }: any) {
+interface InsightRowProps {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  meta: string;
+}
+
+function InsightRow({ icon, title, desc, meta }: InsightRowProps) {
   return (
     <div className="flex items-start gap-4 p-6 hover:bg-black/[0.01] transition-colors cursor-pointer">
       <div className="mt-0.5">{icon}</div>

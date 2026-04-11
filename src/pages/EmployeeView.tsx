@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { useParams } from 'react-router-dom';
 import { Battery, BatteryWarning, BrainCircuit, MessageCircle, CalendarDays, Fingerprint, Activity, Loader2 } from 'lucide-react';
@@ -149,7 +149,15 @@ export default function EmployeeView() {
   );
 }
 
-function PatternCard({ icon, title, value, desc, delay }: any) {
+interface PatternCardProps {
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+  desc: string;
+  delay: number;
+}
+
+function PatternCard({ icon, title, value, desc, delay }: PatternCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}

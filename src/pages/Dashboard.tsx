@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { ArrowUpRight, ArrowDownRight, AlertCircle, Clock, Briefcase, Activity, Loader2 } from 'lucide-react';
 import { generateDashboardInsights, DashboardInsights } from '../lib/gemini';
 import { fetchWorkforceData } from '../lib/dataService';
+import React from 'react';
 
 export default function Dashboard() {
   const [insights, setInsights] = useState<DashboardInsights | null>(null);
@@ -114,7 +115,17 @@ export default function Dashboard() {
   );
 }
 
-function MetricCard({ title, value, statement, trend, trendUp, alert, delay }: any) {
+interface MetricCardProps {
+  title: string;
+  value: string;
+  statement: string;
+  trend?: string;
+  trendUp?: boolean;
+  alert?: boolean;
+  delay: number;
+}
+
+function MetricCard({ title, value, statement, trend, trendUp, alert, delay }: MetricCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -142,7 +153,15 @@ function MetricCard({ title, value, statement, trend, trendUp, alert, delay }: a
   );
 }
 
-function ContextRow({ icon, agent, title, desc, time }: any) {
+interface ContextRowProps {
+  icon: React.ReactNode;
+  agent: string;
+  title: string;
+  desc: string;
+  time: string;
+}
+
+function ContextRow({ icon, agent, title, desc, time }: ContextRowProps) {
   return (
     <div className="flex items-start gap-4 p-6 hover:bg-black/[0.01] transition-colors cursor-pointer">
       <div className="mt-0.5">{icon}</div>

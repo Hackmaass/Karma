@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 
+dotenv.config({ path: '.env.local' });
 dotenv.config();
 
 async function startServer() {
@@ -31,7 +32,6 @@ async function startServer() {
   });
 
   app.get(['/api/auth/slack/callback', '/api/auth/slack/callback/'], async (req, res) => {
-    const { code, redirectUri } = req.query;
     try {
       // In a real app, you would exchange the code for a token here using fetch
       // const response = await fetch('https://slack.com/api/oauth.v2.access', { ... });
@@ -74,7 +74,6 @@ async function startServer() {
   });
 
   app.get(['/api/auth/discord/callback', '/api/auth/discord/callback/'], async (req, res) => {
-    const { code, redirectUri } = req.query;
     try {
       // Exchange code for token
       res.send(`
@@ -114,7 +113,6 @@ async function startServer() {
   });
 
   app.get(['/api/auth/teams/callback', '/api/auth/teams/callback/'], async (req, res) => {
-    const { code, redirectUri } = req.query;
     try {
       // Exchange code for token
       res.send(`

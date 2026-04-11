@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { ArrowUpRight, ArrowDownRight, AlertCircle, CheckCircle2, Clock, Briefcase, Activity, Loader2 } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, AlertCircle, Clock, Briefcase, Activity, Loader2 } from 'lucide-react';
 import { generateDashboardInsights, DashboardInsights } from '../lib/gemini';
 import { fetchWorkforceData } from '../lib/dataService';
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { useParams } from 'react-router-dom';
-import { Battery, BatteryMedium, BatteryWarning, BrainCircuit, MessageCircle, CalendarDays, Fingerprint, Activity, Loader2 } from 'lucide-react';
+import { Battery, BatteryWarning, BrainCircuit, MessageCircle, CalendarDays, Fingerprint, Activity, Loader2 } from 'lucide-react';
 import { generateEmployeeInsights, EmployeeInsights } from '../lib/gemini';
 import { fetchEmployeeData } from '../lib/dataService';
 

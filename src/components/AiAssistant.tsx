@@ -106,7 +106,7 @@ export default function AiAssistant({ isOpen, onClose }: { isOpen: boolean; onCl
       setIsLoading(false);
     }
   };
-  
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -119,7 +119,7 @@ export default function AiAssistant({ isOpen, onClose }: { isOpen: boolean; onCl
             onClick={onClose}
             className="fixed inset-0 bg-black/5 z-40 backdrop-blur-sm"
           />
-          
+
           {/* Panel */}
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -143,23 +143,22 @@ export default function AiAssistant({ isOpen, onClose }: { isOpen: boolean; onCl
             {/* Chat Area */}
             <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 min-h-[300px]">
               {messages.map((msg, idx) => (
-                <motion.div 
+                <motion.div
                   key={idx}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={`flex flex-col gap-2 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
                 >
                   {msg.role === 'assistant' && <div className="text-sm text-black/40 font-medium px-4">Founder Assistant</div>}
-                  <div className={`border border-black/[0.04] p-4 text-sm leading-relaxed ${
-                    msg.role === 'user' 
-                      ? 'bg-black text-white rounded-2xl rounded-tr-none' 
-                      : 'bg-[#FAFAFA] text-black/80 rounded-2xl rounded-tl-none'
-                  }`}>
+                  <div className={`border border-black/[0.04] p-4 text-sm leading-relaxed ${msg.role === 'user'
+                    ? 'bg-black text-white rounded-2xl rounded-tr-none'
+                    : 'bg-[#FAFAFA] text-black/80 rounded-2xl rounded-tl-none'
+                    }`}>
                     {msg.content}
                   </div>
                 </motion.div>
               ))}
-              
+
               {isLoading && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-2 items-start">
                   <div className="text-sm text-black/40 font-medium px-4">Founder Assistant</div>
@@ -174,7 +173,7 @@ export default function AiAssistant({ isOpen, onClose }: { isOpen: boolean; onCl
 
               {/* Suggested Prompts - Only show if it's just the initial message */}
               {messages.length <= 1 && !isLoading && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
@@ -198,12 +197,11 @@ export default function AiAssistant({ isOpen, onClose }: { isOpen: boolean; onCl
                   placeholder="Ask anything about your team..."
                   className="w-full bg-white border border-black/[0.08] rounded-full py-3 pl-5 pr-12 text-sm focus:outline-none focus:border-black/20 focus:ring-1 focus:ring-black/5 transition-all shadow-sm"
                 />
-                <button 
+                <button
                   onClick={() => handleSend(query)}
                   disabled={isLoading || !query.trim()}
-                  className={`absolute right-2 w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
-                    query.trim() && !isLoading ? 'bg-black text-white hover:bg-black/90' : 'bg-black/5 text-black/20 cursor-not-allowed'
-                  }`}
+                  className={`absolute right-2 w-8 h-8 flex items-center justify-center rounded-full transition-colors ${query.trim() && !isLoading ? 'bg-black text-white hover:bg-black/90' : 'bg-black/5 text-black/20 cursor-not-allowed'
+                    }`}
                 >
                   <ArrowUp className="w-4 h-4" />
                 </button>
@@ -216,9 +214,9 @@ export default function AiAssistant({ isOpen, onClose }: { isOpen: boolean; onCl
   );
 }
 
-function SuggestedPrompt({ text, onClick }: { text: string; onClick: () => void; key?: React.Key }) {
+function SuggestedPrompt({ text, onClick }: { text: string; onClick: () => void }) {
   return (
-    <button 
+    <button
       onClick={onClick}
       className="text-left px-4 py-3 rounded-xl border border-black/[0.04] bg-white hover:bg-[#FAFAFA] hover:border-black/[0.08] transition-all text-sm text-black/60 hover:text-black"
     >

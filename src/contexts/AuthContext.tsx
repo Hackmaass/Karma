@@ -39,13 +39,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // If Firebase isn't configured, we default to a mock "Founder" user to bypass the login
     if (!isFirebaseConfigured || !auth) {
+      setCurrentUser({
+        uid: 'mock-founder',
+        email: 'founder@karmaos.ai',
+        displayName: 'Hackmaass',
+        photoURL: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+      } as User);
       setLoading(false);
       return;
     }
     
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
+      // If no real user is logged in, we still provide the mock user to bypass the wall
+      if (user) {
+        setCurrentUser(user);
+      } else {
+        setCurrentUser({
+          uid: 'mock-founder',
+          email: 'founder@karmaos.ai',
+          displayName: 'Hackmaass',
+          photoURL: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+        } as User);
+      }
       setLoading(false);
     });
     

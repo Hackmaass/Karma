@@ -1,13 +1,11 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { isFirebaseConfigured } from './lib/firebase';
+
 import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/LoginPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import Dashboard from './pages/Dashboard';
 import TeamInsights from './pages/TeamInsights';
@@ -22,8 +20,6 @@ import HiringAutomation from './pages/HiringAutomation';
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { currentUser } = useAuth();
   
-  // If Firebase is configured, enforce authentication. 
-  // Otherwise, let the user view the prototype.
   if (isFirebaseConfigured && !currentUser) {
     return <Navigate to="/" replace />;
   }
@@ -31,28 +27,61 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function PageTransition({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      className="w-full min-h-screen"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function AnimatedRoutes() {
+  const location = useLocation();
+  
+  // We only animate the top-level roots here. Inner dashboard routes are animated inside DashboardLayout.
+  // Wait, if we put key={location.pathname} here, it will re-render the whole DashboardLayout on every internal navigation.
+  // To prevent DashboardLayout from unmounting on sub-route changes, we use key based on the root path section.
+  const rootPath = location.pathname.startsWith('/app') ? '/app' : location.pathname;
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={rootPath}>
+        <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
+        <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
+        
+        <Route path="/app" element={
+          <PageTransition>
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          </PageTransition>
+        }>
+          <Route index element={<Dashboard />} />
+          <Route path="talent" element={<TalentIntelligence />} />
+          <Route path="team" element={<TeamInsights />} />
+          <Route path="employee/:id" element={<EmployeeView />} />
+          <Route path="leave" element={<LeaveManagement />} />
+          <Route path="attendance" element={<Attendance />} />
+          <Route path="automation" element={<Automation />} />
+          <Route path="hiring" element={<HiringAutomation />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 export default function App() {
   return (
     <AuthProvider>
       <Router>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/app" element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<Dashboard />} />
-            <Route path="talent" element={<TalentIntelligence />} />
-            <Route path="team" element={<TeamInsights />} />
-            <Route path="employee/:id" element={<EmployeeView />} />
-            <Route path="leave" element={<LeaveManagement />} />
-            <Route path="attendance" element={<Attendance />} />
-            <Route path="automation" element={<Automation />} />
-            <Route path="hiring" element={<HiringAutomation />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-        </Routes>
+        <AnimatedRoutes />
       </Router>
     </AuthProvider>
   );

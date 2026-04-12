@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
   User,
   signInWithPopup,
@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe;
   }, []);
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = useCallback(async () => {
     if (!isFirebaseConfigured || !auth) {
       console.warn("Firebase is not configured yet. Please add your config to src/lib/firebase.ts");
       return;
@@ -61,9 +61,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Error signing in with Google", error);
       throw error;
     }
-  };
+  }, []);
 
-  const loginWithMicrosoft = async () => {
+  const loginWithMicrosoft = useCallback(async () => {
     if (!isFirebaseConfigured || !auth) {
       console.warn("Firebase is not configured yet. Please add your config to src/lib/firebase.ts");
       return;
@@ -74,9 +74,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Error signing in with Microsoft", error);
       throw error;
     }
-  };
+  }, []);
 
-  const sendSignInEmailLink = async (email: string) => {
+  const sendSignInEmailLink = useCallback(async (email: string) => {
     if (!isFirebaseConfigured || !auth) {
       throw new Error("Firebase is not configured");
     }
@@ -85,9 +85,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       url: `${origin}/login`,
       handleCodeInApp: true,
     });
-  };
+  }, []);
 
-  const completeSignInWithEmailLink = async (email: string) => {
+  const completeSignInWithEmailLink = useCallback(async (email: string) => {
     if (!isFirebaseConfigured || !auth) {
       throw new Error("Firebase is not configured");
     }
@@ -98,35 +98,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signInWithEmailLink(auth, email, window.location.href);
     window.localStorage.removeItem("emailForSignIn");
     window.history.replaceState({}, document.title, "/login");
-  };
+  }, []);
 
-  const isEmailLinkSignIn = () => {
+  const isEmailLinkSignIn = useCallback(() => {
     if (!auth || typeof window === "undefined") return false;
     return isSignInWithEmailLink(auth, window.location.href);
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     if (!isFirebaseConfigured || !auth) return;
     try {
       await signOut(auth);
     } catch (error) {
       console.error("Error signing out", error);
     }
-  };
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      currentUser,
+      loading,
+      loginWithGoogle,
+      loginWithMicrosoft,
+      sendSignInEmailLink,
+      completeSignInWithEmailLink,
+      isEmailLinkSignIn,
+      logout,
+    }),
+    [
+      currentUser,
+      loading,
+      loginWithGoogle,
+      loginWithMicrosoft,
+      sendSignInEmailLink,
+      completeSignInWithEmailLink,
+      isEmailLinkSignIn,
+      logout,
+    ]
+  );
 
   return (
-    <AuthContext.Provider
-      value={{
-        currentUser,
-        loading,
-        loginWithGoogle,
-        loginWithMicrosoft,
-        sendSignInEmailLink,
-        completeSignInWithEmailLink,
-        isEmailLinkSignIn,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {!loading && children}
     </AuthContext.Provider>
   );

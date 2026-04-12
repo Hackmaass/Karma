@@ -13,6 +13,8 @@ const SCREENSHOT_PATHS = [
   '/login-screenshots/slide-1.png',
   '/login-screenshots/slide-2.png',
   '/login-screenshots/slide-3.png',
+  '/login-screenshots/slide-4.png',
+  '/login-screenshots/slide-5.png',
 ];
 
 const TESTIMONIALS = [
@@ -85,7 +87,7 @@ export default function LoginPage() {
   useEffect(() => {
     const id = window.setInterval(() => {
       setSlide((s) => (s + 1) % Math.max(SCREENSHOT_PATHS.length, 1));
-    }, 6000);
+    }, 4500);
     return () => window.clearInterval(id);
   }, []);
 

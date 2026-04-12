@@ -183,7 +183,7 @@ export default function LoginPage() {
             'dark:bg-zinc-900 dark:border-white/15 dark:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.75)]'
           )}
         >
-          <h1 className="text-xl font-semibold tracking-tight mb-1 text-zinc-900 dark:text-white">Confirm your email</h1>
+          <h1 className="text-xl font-semibold tracking-tight mb-1 text-zinc-900 dark:text-zinc-100">Confirm your email</h1>
           <p className="text-sm text-zinc-600 dark:text-zinc-300 mb-6">
             Enter the same address we sent the link to so we can finish signing you in.
           </p>
@@ -199,7 +199,7 @@ export default function LoginPage() {
                   'w-full rounded-xl border px-4 py-3 text-sm outline-none transition-shadow',
                   'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400',
                   'focus:ring-2 focus:ring-zinc-900/15 focus:border-zinc-300',
-                  'dark:bg-zinc-950 dark:border-white/20 dark:text-white dark:placeholder:text-zinc-400',
+                  'dark:bg-zinc-950 dark:border-white/20 dark:text-zinc-100 dark:placeholder:text-zinc-400',
                   'dark:focus:ring-white/20 dark:focus:border-white/30'
                 )}
                 autoComplete="email"
@@ -215,8 +215,8 @@ export default function LoginPage() {
               disabled={emailLoading}
               className={cn(
                 'w-full flex items-center justify-center gap-2 rounded-xl text-sm font-medium py-3 transition-colors',
-                'bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-55',
-                'dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100'
+                'bg-zinc-900 text-zinc-50 hover:bg-zinc-800 disabled:opacity-55',
+                'dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200'
               )}
             >
               {emailLoading ? 'Signing in…' : 'Continue'}
@@ -239,10 +239,10 @@ export default function LoginPage() {
             'dark:bg-zinc-900 dark:border-white/15 dark:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.75)]'
           )}
         >
-          <h1 className="text-xl font-semibold tracking-tight mb-2 text-zinc-900 dark:text-white">Check your inbox</h1>
+          <h1 className="text-xl font-semibold tracking-tight mb-2 text-zinc-900 dark:text-zinc-100">Check your inbox</h1>
           <p className="text-sm text-zinc-600 dark:text-zinc-300 mb-6">
             We sent a sign-in link to{' '}
-            <span className="font-medium text-zinc-900 dark:text-white">{email}</span>. Open it on this device to
+            <span className="font-medium text-zinc-900 dark:text-zinc-100">{email}</span>. Open it on this device to
             continue.
           </p>
           <button
@@ -281,12 +281,12 @@ export default function LoginPage() {
           <div className="mb-8">
             <Link
               to="/"
-              className="inline-flex items-center gap-2 text-sm mb-8 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white"
+              className="inline-flex items-center gap-2 text-sm mb-8 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
             >
-              <span className="w-5 h-5 bg-zinc-900 dark:bg-white rounded-full shrink-0" />
-              <span className="font-medium tracking-tight text-zinc-900 dark:text-white">KarmaOS</span>
+              <span className="w-5 h-5 bg-zinc-900 dark:bg-zinc-100 rounded-full shrink-0" />
+              <span className="font-medium tracking-tight text-zinc-900 dark:text-zinc-100">KarmaOS</span>
             </Link>
-            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white mb-2">{title}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 mb-2">{title}</h1>
             <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">{subtitle}</p>
           </div>
 
@@ -299,7 +299,7 @@ export default function LoginPage() {
                 'flex-1 flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-medium transition-colors',
                 'border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50',
                 'disabled:opacity-60 disabled:grayscale-[0.3]',
-                'dark:border-white/20 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-800/80'
+                'dark:border-white/20 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800'
               )}
             >
               <GoogleMark className="w-5 h-5 shrink-0" />
@@ -313,7 +313,7 @@ export default function LoginPage() {
                 'flex-1 flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-medium transition-colors',
                 'border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50',
                 'disabled:opacity-60 disabled:grayscale-[0.3]',
-                'dark:border-white/20 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-800/80'
+                'dark:border-white/20 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800'
               )}
             >
               <MicrosoftMark className="w-5 h-5 shrink-0" />
@@ -322,9 +322,9 @@ export default function LoginPage() {
           </div>
 
           <div className="relative flex items-center gap-4 mb-6">
-            <div className="h-px flex-1 bg-zinc-200 dark:bg-white/15" />
+            <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-100/15" />
             <span className="text-xs font-medium text-zinc-400 dark:text-zinc-400">or</span>
-            <div className="h-px flex-1 bg-zinc-200 dark:bg-white/15" />
+            <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-100/15" />
           </div>
 
           <form onSubmit={handleEmailContinue} className="flex flex-col gap-4">
@@ -342,7 +342,7 @@ export default function LoginPage() {
                   'w-full rounded-xl border px-4 py-3 text-sm outline-none transition-shadow',
                   'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400',
                   'focus:ring-2 focus:ring-zinc-900/15 focus:border-zinc-300',
-                  'dark:bg-zinc-950 dark:border-white/20 dark:text-white dark:placeholder:text-zinc-400',
+                  'dark:bg-zinc-950 dark:border-white/20 dark:text-zinc-100 dark:placeholder:text-zinc-500',
                   'dark:focus:ring-white/20 dark:focus:border-white/30'
                 )}
                 autoComplete="email"
@@ -358,8 +358,8 @@ export default function LoginPage() {
               disabled={emailLoading || oauthLoading !== null}
               className={cn(
                 'w-full flex items-center justify-center gap-2 rounded-xl text-sm font-medium py-3.5 transition-colors',
-                'bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-55',
-                'dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100'
+                'bg-zinc-900 text-zinc-50 hover:bg-zinc-800 disabled:opacity-55',
+                'dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200'
               )}
             >
               {emailLoading ? 'Sending link…' : 'Continue'}
@@ -373,7 +373,7 @@ export default function LoginPage() {
                 Already have an account?{' '}
                 <Link
                   to="/login"
-                  className="font-semibold text-zinc-900 dark:text-white hover:underline underline-offset-2"
+                  className="font-semibold text-zinc-900 dark:text-zinc-100 hover:underline underline-offset-2"
                 >
                   Sign in
                 </Link>
@@ -383,7 +383,7 @@ export default function LoginPage() {
                 Don&apos;t have an account?{' '}
                 <Link
                   to="/login?mode=signup"
-                  className="font-semibold text-zinc-900 dark:text-white hover:underline underline-offset-2"
+                  className="font-semibold text-zinc-900 dark:text-zinc-100 hover:underline underline-offset-2"
                 >
                   Sign up
                 </Link>
@@ -424,7 +424,7 @@ export default function LoginPage() {
               <p className="text-lg font-medium text-zinc-900 dark:text-zinc-100 leading-snug tracking-tight mb-4">
                 &ldquo;{TESTIMONIALS[slide % TESTIMONIALS.length].quote}&rdquo;
               </p>
-              <p className="text-sm font-semibold text-zinc-900 dark:text-white">
+              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                 {TESTIMONIALS[slide % TESTIMONIALS.length].name}
               </p>
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -476,7 +476,7 @@ export default function LoginPage() {
             className={cn(
               'absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full border shadow-md flex items-center justify-center transition-colors',
               'bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900',
-              'dark:bg-zinc-800 dark:border-white/20 dark:text-white dark:hover:bg-zinc-700'
+              'dark:bg-zinc-800 dark:border-white/20 dark:text-zinc-100 dark:hover:bg-zinc-700'
             )}
             aria-label="Previous screenshot"
           >
@@ -488,7 +488,7 @@ export default function LoginPage() {
             className={cn(
               'absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full border shadow-md flex items-center justify-center transition-colors',
               'bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900',
-              'dark:bg-zinc-800 dark:border-white/20 dark:text-white dark:hover:bg-zinc-700'
+              'dark:bg-zinc-800 dark:border-white/20 dark:text-zinc-100 dark:hover:bg-zinc-700'
             )}
             aria-label="Next screenshot"
           >

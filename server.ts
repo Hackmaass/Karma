@@ -191,7 +191,7 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(cors());
-  app.use(express.json());
+  app.use(express.json({ limit: '10mb' }));
 
   // --- Employee Data API ---
 
@@ -251,6 +251,713 @@ async function startServer() {
       console.error('Error loading employee:', error);
       res.status(500).json({ error: 'Failed to load employee data' });
     }
+  });
+
+  // =====================================================
+  // --- HR OPERATIONS LAYER (In-Memory MVP) ---
+  // =====================================================
+
+  // --- Data Stores ---
+
+  interface LeaveRequest {
+    id: number;
+    employeeId: number;
+    employeeName: string;
+    department: string;
+    type: 'sick' | 'casual' | 'unpaid';
+    startDate: string;
+    endDate: string;
+    days: number;
+    reason: string;
+    status: 'pending' | 'approved' | 'rejected';
+    createdAt: string;
+  }
+
+  interface AttendanceRecord {
+    employeeId: number;
+    employeeName: string;
+    department: string;
+    date: string;
+    checkIn: string | null;
+    checkOut: string | null;
+    workingHours: number | null;
+    status: 'checked-in' | 'checked-out' | 'absent';
+  }
+
+  interface AutomationRule {
+    id: number;
+    prompt: string;
+    condition: string;
+    trigger: string;
+    action: string;
+    actionType: 'notification' | 'flag' | 'log';
+    active: boolean;
+    createdAt: string;
+    lastRun: string | null;
+    lastResults: AutomationResult[] | null;
+  }
+
+  interface AutomationResult {
+    employeeId: number;
+    employeeName: string;
+    department: string;
+    triggered: boolean;
+    detail: string;
+  }
+
+  let leaveRequests: LeaveRequest[] = [];
+  let leaveIdCounter = 1;
+  let attendanceLog: AttendanceRecord[] = [];
+  let automationRules: AutomationRule[] = [];
+  let automationIdCounter = 1;
+
+  // Seed some initial leave requests from existing employee data
+  function seedHRData() {
+    const employees = loadEmployees();
+    const today = new Date();
+
+    // Generate some historical leave requests
+    const leaveTypes: Array<'sick' | 'casual' | 'unpaid'> = ['sick', 'casual', 'unpaid'];
+    const reasons = [
+      'Not feeling well', 'Family commitment', 'Personal errand',
+      'Medical appointment', 'Mental health day', 'Travel',
+    ];
+
+    for (const emp of employees.slice(0, 30)) {
+      const totalLeaves = emp.sickLeaves + emp.unpaidLeaves;
+      const numRequests = Math.min(totalLeaves, Math.floor(Math.random() * 4) + 1);
+
+      for (let i = 0; i < numRequests; i++) {
+        const daysAgo = Math.floor(Math.random() * 60) + 1;
+        const startDate = new Date(today);
+        startDate.setDate(startDate.getDate() - daysAgo);
+        const leaveDays = Math.floor(Math.random() * 3) + 1;
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + leaveDays - 1);
+
+        leaveRequests.push({
+          id: leaveIdCounter++,
+          employeeId: emp.id,
+          employeeName: emp.name,
+          department: emp.department,
+          type: leaveTypes[Math.floor(Math.random() * leaveTypes.length)],
+          startDate: startDate.toISOString().split('T')[0],
+          endDate: endDate.toISOString().split('T')[0],
+          days: leaveDays,
+          reason: reasons[Math.floor(Math.random() * reasons.length)],
+          status: Math.random() > 0.3 ? 'approved' : (Math.random() > 0.5 ? 'rejected' : 'pending'),
+          createdAt: startDate.toISOString(),
+        });
+      }
+    }
+
+    // Add a few pending requests for realism
+    for (const emp of employees.slice(5, 12)) {
+      const startDate = new Date(today);
+      startDate.setDate(startDate.getDate() + Math.floor(Math.random() * 7) + 1);
+      const leaveDays = Math.floor(Math.random() * 2) + 1;
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + leaveDays - 1);
+
+      leaveRequests.push({
+        id: leaveIdCounter++,
+        employeeId: emp.id,
+        employeeName: emp.name,
+        department: emp.department,
+        type: leaveTypes[Math.floor(Math.random() * leaveTypes.length)],
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+        days: leaveDays,
+        reason: reasons[Math.floor(Math.random() * reasons.length)],
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    // Seed attendance for today
+    const todayStr = today.toISOString().split('T')[0];
+    for (const emp of employees.slice(0, 50)) {
+      const checkedIn = Math.random() > 0.15;
+      const checkedOut = checkedIn && Math.random() > 0.4;
+      const checkInHour = 8 + Math.floor(Math.random() * 2);
+      const checkInMin = Math.floor(Math.random() * 60);
+      const checkOutHour = checkInHour + 7 + Math.floor(Math.random() * 3);
+      const checkOutMin = Math.floor(Math.random() * 60);
+
+      attendanceLog.push({
+        employeeId: emp.id,
+        employeeName: emp.name,
+        department: emp.department,
+        date: todayStr,
+        checkIn: checkedIn ? `${String(checkInHour).padStart(2, '0')}:${String(checkInMin).padStart(2, '0')}` : null,
+        checkOut: checkedOut ? `${String(checkOutHour).padStart(2, '0')}:${String(checkOutMin).padStart(2, '0')}` : null,
+        workingHours: checkedOut
+          ? parseFloat(((checkOutHour * 60 + checkOutMin) - (checkInHour * 60 + checkInMin)) / 60 + '' ).toFixed(1) as unknown as number
+          : null,
+        status: checkedOut ? 'checked-out' : (checkedIn ? 'checked-in' : 'absent'),
+      });
+    }
+
+    // Seed one sample automation rule
+    automationRules.push({
+      id: automationIdCounter++,
+      prompt: 'If an employee takes more than 3 leaves in a month, flag them for review',
+      condition: 'employee.totalLeavesThisMonth > 3',
+      trigger: 'leave_request_approved',
+      action: 'Flag employee for manager review',
+      actionType: 'flag',
+      active: true,
+      createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+      lastRun: null,
+      lastResults: null,
+    });
+  }
+
+  seedHRData();
+
+  // --- Leave Management APIs ---
+
+  app.get('/api/hr/leaves', (_req, res) => {
+    const employees = loadEmployees();
+
+    // Calculate leave balances per employee
+    const balances: Record<number, { total: number; used: number; remaining: number }> = {};
+    for (const emp of employees) {
+      const totalAllowance = 18; // standard annual allowance
+      const usedLeaves = leaveRequests
+        .filter(l => l.employeeId === emp.id && l.status === 'approved')
+        .reduce((sum, l) => sum + l.days, 0);
+      balances[emp.id] = {
+        total: totalAllowance,
+        used: usedLeaves,
+        remaining: Math.max(0, totalAllowance - usedLeaves),
+      };
+    }
+
+    res.json({
+      requests: leaveRequests.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+      balances,
+      summary: {
+        totalPending: leaveRequests.filter(l => l.status === 'pending').length,
+        totalApproved: leaveRequests.filter(l => l.status === 'approved').length,
+        totalRejected: leaveRequests.filter(l => l.status === 'rejected').length,
+      },
+    });
+  });
+
+  app.post('/api/hr/leaves', (req, res) => {
+    const { employeeId, type, startDate, endDate, reason } = req.body;
+    const employees = loadEmployees();
+    const emp = employees.find(e => e.id === employeeId);
+
+    if (!emp) return res.status(404).json({ error: 'Employee not found' });
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+
+    const request: LeaveRequest = {
+      id: leaveIdCounter++,
+      employeeId: emp.id,
+      employeeName: emp.name,
+      department: emp.department,
+      type,
+      startDate,
+      endDate,
+      days,
+      reason: reason || '',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+
+    leaveRequests.push(request);
+    res.json(request);
+  });
+
+  app.patch('/api/hr/leaves/:id', (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    const { status } = req.body;
+
+    const request = leaveRequests.find(l => l.id === id);
+    if (!request) return res.status(404).json({ error: 'Leave request not found' });
+    if (status !== 'approved' && status !== 'rejected') {
+      return res.status(400).json({ error: 'Status must be approved or rejected' });
+    }
+
+    request.status = status;
+    res.json(request);
+  });
+
+  // --- Attendance APIs ---
+
+  app.get('/api/hr/attendance', (_req, res) => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayRecords = attendanceLog.filter(a => a.date === todayStr);
+
+    const employees = loadEmployees();
+    const checkedIn = todayRecords.filter(a => a.status === 'checked-in').length;
+    const checkedOut = todayRecords.filter(a => a.status === 'checked-out').length;
+    const absent = employees.length - todayRecords.length;
+
+    res.json({
+      date: todayStr,
+      records: todayRecords,
+      summary: {
+        total: employees.length,
+        checkedIn,
+        checkedOut,
+        absent,
+        avgWorkingHours: todayRecords
+          .filter(r => r.workingHours !== null)
+          .reduce((sum, r) => sum + (r.workingHours || 0), 0) /
+          Math.max(1, todayRecords.filter(r => r.workingHours !== null).length),
+      },
+    });
+  });
+
+  app.post('/api/hr/attendance/checkin', (req, res) => {
+    const { employeeId } = req.body;
+    const employees = loadEmployees();
+    const emp = employees.find(e => e.id === employeeId);
+    if (!emp) return res.status(404).json({ error: 'Employee not found' });
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    // Check if already checked in
+    const existing = attendanceLog.find(a => a.employeeId === employeeId && a.date === todayStr);
+    if (existing) {
+      return res.status(400).json({ error: 'Already checked in today' });
+    }
+
+    const record: AttendanceRecord = {
+      employeeId: emp.id,
+      employeeName: emp.name,
+      department: emp.department,
+      date: todayStr,
+      checkIn: timeStr,
+      checkOut: null,
+      workingHours: null,
+      status: 'checked-in',
+    };
+
+    attendanceLog.push(record);
+    res.json(record);
+  });
+
+  app.post('/api/hr/attendance/checkout', (req, res) => {
+    const { employeeId } = req.body;
+    const todayStr = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    const record = attendanceLog.find(a => a.employeeId === employeeId && a.date === todayStr);
+    if (!record) return res.status(400).json({ error: 'No check-in found for today' });
+    if (record.status === 'checked-out') return res.status(400).json({ error: 'Already checked out' });
+
+    record.checkOut = timeStr;
+    record.status = 'checked-out';
+
+    // Calculate working hours
+    const [inH, inM] = record.checkIn!.split(':').map(Number);
+    const [outH, outM] = timeStr.split(':').map(Number);
+    record.workingHours = parseFloat((((outH * 60 + outM) - (inH * 60 + inM)) / 60).toFixed(1));
+
+    res.json(record);
+  });
+
+  // --- Payroll API ---
+
+  app.get('/api/hr/payroll', (_req, res) => {
+    const employees = loadEmployees();
+    const currentMonth = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+    const payrollData = employees.map(emp => {
+      const approvedLeaves = leaveRequests
+        .filter(l => l.employeeId === emp.id && l.status === 'approved' && l.type === 'unpaid')
+        .reduce((sum, l) => sum + l.days, 0);
+
+      const dailyRate = emp.monthlySalary / 22; // ~22 working days
+      const deductions = Math.round(approvedLeaves * dailyRate);
+      const netSalary = emp.monthlySalary - deductions;
+
+      return {
+        employeeId: emp.id,
+        employeeName: emp.name,
+        department: emp.department,
+        monthlySalary: emp.monthlySalary,
+        unpaidLeaveDays: approvedLeaves,
+        deductions,
+        netSalary,
+      };
+    });
+
+    const totalPayroll = payrollData.reduce((sum, p) => sum + p.netSalary, 0);
+    const totalDeductions = payrollData.reduce((sum, p) => sum + p.deductions, 0);
+
+    res.json({
+      month: currentMonth,
+      totalEmployees: employees.length,
+      totalPayroll,
+      totalDeductions,
+      employees: payrollData,
+    });
+  });
+
+  // --- Automation APIs ---
+
+  app.get('/api/automations', (_req, res) => {
+    res.json(automationRules);
+  });
+
+  app.post('/api/automations', async (req, res) => {
+    try {
+      const { prompt } = req.body;
+      if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+
+      // Use Gemini to parse the natural language prompt into a structured rule
+      const GEMINI_KEY = process.env.GEMINI_API_KEY || '';
+      if (!GEMINI_KEY) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
+      }
+
+      const { GoogleGenAI } = await import('@google/genai');
+      const ai = new GoogleGenAI({ apiKey: GEMINI_KEY });
+
+      const parseResponse = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: `Parse the following automation rule into a structured format. Respond ONLY with valid JSON.\n\nRule: "${prompt}"\n\nRespond with this exact JSON structure:\n{\n  "condition": "a human-readable condition statement",\n  "trigger": "the event that triggers evaluation (e.g., leave_request_approved, daily_check, attendance_logged)",\n  "action": "what happens when the condition is met",\n  "actionType": "notification OR flag OR log"\n}`,
+        config: {
+          responseMimeType: 'application/json',
+        },
+      });
+
+      const parsed = JSON.parse(parseResponse.text?.trim() || '{}');
+
+      const rule: AutomationRule = {
+        id: automationIdCounter++,
+        prompt,
+        condition: parsed.condition || 'Unable to parse condition',
+        trigger: parsed.trigger || 'manual',
+        action: parsed.action || 'Log event',
+        actionType: parsed.actionType || 'log',
+        active: true,
+        createdAt: new Date().toISOString(),
+        lastRun: null,
+        lastResults: null,
+      };
+
+      automationRules.push(rule);
+      res.json(rule);
+    } catch (error: any) {
+      console.error('Automation creation error:', error?.message || error);
+      res.status(500).json({ error: 'Failed to parse automation rule' });
+    }
+  });
+
+  app.post('/api/automations/:id/run', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const rule = automationRules.find(r => r.id === id);
+      if (!rule) return res.status(404).json({ error: 'Rule not found' });
+
+      const employees = loadEmployees();
+      const GEMINI_KEY = process.env.GEMINI_API_KEY || '';
+
+      if (!GEMINI_KEY) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
+      }
+
+      // Prepare context data for rule evaluation
+      const leaveStats = employees.slice(0, 50).map(emp => {
+        const empLeaves = leaveRequests.filter(l => l.employeeId === emp.id && l.status === 'approved');
+        const recentLeaves = empLeaves.filter(l => {
+          const d = new Date(l.startDate);
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          return d >= thirtyDaysAgo;
+        });
+        return {
+          id: emp.id,
+          name: emp.name,
+          department: emp.department,
+          totalLeavesThisMonth: recentLeaves.reduce((sum, l) => sum + l.days, 0),
+          sickLeaves: emp.sickLeaves,
+          overtimeHours: emp.overtimeHours,
+          overloadRisk: emp.overloadRisk,
+        };
+      });
+
+      const { GoogleGenAI } = await import('@google/genai');
+      const ai = new GoogleGenAI({ apiKey: GEMINI_KEY });
+
+      const evalResponse = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: `You are evaluating a workforce automation rule against employee data.
+
+Rule: "${rule.prompt}"
+Parsed Condition: "${rule.condition}"
+
+Employee Data (first 50):
+${JSON.stringify(leaveStats, null, 2)}
+
+Evaluate which employees trigger this rule. Respond ONLY with valid JSON array:
+[
+  { "employeeId": number, "employeeName": "string", "department": "string", "triggered": true/false, "detail": "brief explanation" }
+]
+
+Include only employees where triggered is true. If none triggered, return an empty array [].`,
+        config: {
+          responseMimeType: 'application/json',
+        },
+      });
+
+      const results: AutomationResult[] = JSON.parse(evalResponse.text?.trim() || '[]');
+
+      rule.lastRun = new Date().toISOString();
+      rule.lastResults = results;
+
+      res.json({ rule, results });
+    } catch (error: any) {
+      console.error('Automation run error:', error?.message || error);
+      res.status(500).json({ error: 'Failed to evaluate rule' });
+    }
+  });
+
+  app.delete('/api/automations/:id', (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    const index = automationRules.findIndex(r => r.id === id);
+    if (index === -1) return res.status(404).json({ error: 'Rule not found' });
+
+    automationRules.splice(index, 1);
+    res.json({ success: true });
+  });
+
+  // =====================================================
+  // --- HIRING AUTOMATION ENGINE ---
+  // =====================================================
+
+  interface HiringRule {
+    id: number;
+    prompt: string;
+    condition: string;
+    action: string;
+    source: 'linkedin' | 'naukri' | 'both' | 'manual';
+    roleTarget: string;
+    filters: {
+      minExperience: number;
+      maxExperience: number;
+      skills: string[];
+      location: string;
+      excludeCompanies: string[];
+    };
+    active: boolean;
+    createdAt: string;
+    lastRun: string | null;
+    candidatesFound: number;
+  }
+
+  interface ScrapedCandidate {
+    id: number;
+    name: string;
+    title: string;
+    company: string;
+    experience: number;
+    skills: string[];
+    location: string;
+    source: 'linkedin' | 'naukri';
+    matchScore: number;
+    dnaMatch: string;
+    profileUrl: string;
+    status: 'new' | 'shortlisted' | 'rejected' | 'contacted';
+  }
+
+  let hiringRules: HiringRule[] = [];
+  let hiringRuleIdCounter = 1;
+  let scrapedCandidates: ScrapedCandidate[] = [];
+  let candidateIdCounter = 1;
+
+  // Seed mock scraped candidates
+  const mockNames = [
+    'Priya Sharma', 'Arjun Patel', 'Neha Gupta', 'Rahul Verma', 'Ananya Singh',
+    'Vikram Reddy', 'Sneha Iyer', 'Karthik Nair', 'Deepa Menon', 'Amit Kumar',
+    'Riya Desai', 'Sanjay Rao', 'Pooja Thakur', 'Manish Jain', 'Kavya Pillai',
+    'Rohan Das', 'Meera Krishnan', 'Aditya Saxena', 'Divya Agarwal', 'Nikhil Chowdhury'
+  ];
+  const mockTitles = ['Senior Software Engineer', 'Backend Developer', 'Full Stack Engineer', 'Product Manager', 'DevOps Engineer', 'Data Scientist', 'Frontend Developer', 'ML Engineer', 'Tech Lead', 'SDE-III'];
+  const mockCompanies = ['Infosys', 'TCS', 'Wipro', 'Flipkart', 'Razorpay', 'Freshworks', 'Zoho', 'Swiggy', 'PhonePe', 'Groww', 'Paytm', 'Dream11'];
+  const mockSkills = ['React', 'Node.js', 'Python', 'AWS', 'Docker', 'Kubernetes', 'TypeScript', 'PostgreSQL', 'MongoDB', 'Go', 'Java', 'Machine Learning', 'System Design', 'Redis', 'GraphQL'];
+  const mockLocations = ['Bangalore', 'Mumbai', 'Hyderabad', 'Pune', 'Delhi NCR', 'Chennai', 'Remote'];
+  const dnaPatterns = ['Maker (High Focus)', 'Maker (Overclocked)', 'Synchronizer', 'Operator', 'Maker'];
+
+  for (let i = 0; i < 20; i++) {
+    const skills: string[] = [];
+    const numSkills = 3 + Math.floor(Math.random() * 4);
+    const shuffled = [...mockSkills].sort(() => Math.random() - 0.5);
+    for (let j = 0; j < numSkills; j++) skills.push(shuffled[j]);
+
+    scrapedCandidates.push({
+      id: candidateIdCounter++,
+      name: mockNames[i],
+      title: mockTitles[Math.floor(Math.random() * mockTitles.length)],
+      company: mockCompanies[Math.floor(Math.random() * mockCompanies.length)],
+      experience: 2 + Math.floor(Math.random() * 10),
+      skills,
+      location: mockLocations[Math.floor(Math.random() * mockLocations.length)],
+      source: Math.random() > 0.5 ? 'linkedin' : 'naukri',
+      matchScore: 55 + Math.floor(Math.random() * 45),
+      dnaMatch: dnaPatterns[Math.floor(Math.random() * dnaPatterns.length)],
+      profileUrl: `https://linkedin.com/in/${mockNames[i].toLowerCase().replace(/\s/g, '-')}`,
+      status: 'new',
+    });
+  }
+
+  // Seed one hiring rule
+  hiringRules.push({
+    id: hiringRuleIdCounter++,
+    prompt: 'Find senior backend engineers with 5+ years experience in Node.js or Go, based in Bangalore or Remote',
+    condition: 'experience >= 5 AND skills include (Node.js OR Go) AND location in (Bangalore, Remote)',
+    action: 'Auto-shortlist candidates with match score > 80%',
+    source: 'both',
+    roleTarget: 'Senior Backend Engineer',
+    filters: {
+      minExperience: 5,
+      maxExperience: 15,
+      skills: ['Node.js', 'Go', 'System Design'],
+      location: 'Bangalore, Remote',
+      excludeCompanies: [],
+    },
+    active: true,
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+    lastRun: null,
+    candidatesFound: 0,
+  });
+
+  // --- Hiring Rule APIs ---
+
+  app.get('/api/hiring/rules', (_req, res) => {
+    res.json(hiringRules);
+  });
+
+  app.post('/api/hiring/rules', async (req, res) => {
+    try {
+      const { prompt } = req.body;
+      if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+
+      const GEMINI_KEY = process.env.GEMINI_API_KEY || '';
+      if (!GEMINI_KEY) return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
+
+      const { GoogleGenAI } = await import('@google/genai');
+      const ai = new GoogleGenAI({ apiKey: GEMINI_KEY });
+
+      const parseResponse = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: `Parse this hiring automation rule into structured format. Respond ONLY with valid JSON.\n\nRule: "${prompt}"\n\nRespond with:\n{\n  "condition": "human-readable filter condition",\n  "action": "what to do with matching candidates",\n  "source": "linkedin OR naukri OR both",\n  "roleTarget": "target job title",\n  "filters": {\n    "minExperience": number,\n    "maxExperience": number,\n    "skills": ["skill1", "skill2"],\n    "location": "city or Remote",\n    "excludeCompanies": []\n  }\n}`,
+        config: { responseMimeType: 'application/json' },
+      });
+
+      const parsed = JSON.parse(parseResponse.text?.trim() || '{}');
+
+      const rule: HiringRule = {
+        id: hiringRuleIdCounter++,
+        prompt,
+        condition: parsed.condition || 'Unable to parse',
+        action: parsed.action || 'Review candidates',
+        source: parsed.source || 'both',
+        roleTarget: parsed.roleTarget || 'General',
+        filters: {
+          minExperience: parsed.filters?.minExperience || 0,
+          maxExperience: parsed.filters?.maxExperience || 20,
+          skills: parsed.filters?.skills || [],
+          location: parsed.filters?.location || 'Any',
+          excludeCompanies: parsed.filters?.excludeCompanies || [],
+        },
+        active: true,
+        createdAt: new Date().toISOString(),
+        lastRun: null,
+        candidatesFound: 0,
+      };
+
+      hiringRules.push(rule);
+      res.json(rule);
+    } catch (error: any) {
+      console.error('Hiring rule creation error:', error?.message || error);
+      res.status(500).json({ error: 'Failed to parse hiring rule' });
+    }
+  });
+
+  app.patch('/api/hiring/rules/:id', (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    const rule = hiringRules.find(r => r.id === id);
+    if (!rule) return res.status(404).json({ error: 'Rule not found' });
+
+    // Allow manual edits to filters
+    const updates = req.body;
+    if (updates.filters) rule.filters = { ...rule.filters, ...updates.filters };
+    if (updates.condition) rule.condition = updates.condition;
+    if (updates.action) rule.action = updates.action;
+    if (updates.source) rule.source = updates.source;
+    if (updates.roleTarget) rule.roleTarget = updates.roleTarget;
+    if (typeof updates.active === 'boolean') rule.active = updates.active;
+
+    res.json(rule);
+  });
+
+  app.delete('/api/hiring/rules/:id', (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    const index = hiringRules.findIndex(r => r.id === id);
+    if (index === -1) return res.status(404).json({ error: 'Rule not found' });
+    hiringRules.splice(index, 1);
+    res.json({ success: true });
+  });
+
+  // --- Scraping Simulation APIs ---
+
+  app.post('/api/hiring/rules/:id/scrape', async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    const rule = hiringRules.find(r => r.id === id);
+    if (!rule) return res.status(404).json({ error: 'Rule not found' });
+
+    // Simulate scraping delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Filter existing candidates based on rule filters
+    const matches = scrapedCandidates.filter(c => {
+      const expMatch = c.experience >= rule.filters.minExperience && c.experience <= rule.filters.maxExperience;
+      const skillMatch = rule.filters.skills.length === 0 || rule.filters.skills.some(s => c.skills.includes(s));
+      const locMatch = rule.filters.location === 'Any' || rule.filters.location.toLowerCase().includes(c.location.toLowerCase()) || c.location === 'Remote';
+      const sourceMatch = rule.source === 'both' || c.source === rule.source;
+      const excludeMatch = rule.filters.excludeCompanies.length === 0 || !rule.filters.excludeCompanies.includes(c.company);
+      return expMatch && skillMatch && locMatch && sourceMatch && excludeMatch;
+    });
+
+    rule.lastRun = new Date().toISOString();
+    rule.candidatesFound = matches.length;
+
+    res.json({
+      rule,
+      candidates: matches.sort((a, b) => b.matchScore - a.matchScore),
+      meta: {
+        source: rule.source,
+        totalScanned: 150 + Math.floor(Math.random() * 200),
+        matched: matches.length,
+        avgMatchScore: matches.length > 0 ? Math.round(matches.reduce((s, c) => s + c.matchScore, 0) / matches.length) : 0,
+      },
+    });
+  });
+
+  app.get('/api/hiring/candidates', (_req, res) => {
+    res.json(scrapedCandidates.sort((a, b) => b.matchScore - a.matchScore));
+  });
+
+  app.patch('/api/hiring/candidates/:id', (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    const candidate = scrapedCandidates.find(c => c.id === id);
+    if (!candidate) return res.status(404).json({ error: 'Candidate not found' });
+
+    if (req.body.status) candidate.status = req.body.status;
+    res.json(candidate);
   });
 
   // --- Gemini AI Routes ---

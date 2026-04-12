@@ -130,7 +130,7 @@ export default function EmployeeView() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="bg-[#FAFAFA] border border-black/[0.08] rounded-3xl p-8 relative overflow-hidden"
+          className="bg-page-bg border border-black/[0.08] rounded-3xl p-8 relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-black/[0.02] rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 

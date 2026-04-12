@@ -1023,7 +1023,7 @@ Include only employees where triggered is true. If none triggered, return an emp
         Workforce Data:
         ${JSON.stringify(req.body, null, 2)}
         
-        Provide a high-level primary insight about the current state of the organization, 3 key metrics (like Deep Work, Active Candidates, Overload Risk), and 3 recent agent observations (from Operations, Recruiter, or Analyst agents).`,
+        Provide a high-level primary insight about the current state of the organization, 3 key metrics (like Deep Work, Active Candidates, Overload Risk, or Developer Velocity from GitHub data), and 3 recent agent observations (from Operations, Recruiter, or Analyst agents). If analyzing IT/Engineering teams, prioritize GitHub metrics like commits and PR activity.`,
         {
           type: 'OBJECT' as const,
           properties: {

@@ -5,12 +5,12 @@ import { getFirestore } from 'firebase/firestore';
 // TODO: Replace this with your actual Firebase config object
 // You can find this in your Firebase Console under Project Settings
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyC3sQNinu9kiMzNQ4JWjVm9LM2ZdLQFHtw",
+  authDomain: "karmaos-ea327.firebaseapp.com",
+  projectId: "karmaos-ea327",
+  storageBucket: "karmaos-ea327.firebasestorage.app",
+  messagingSenderId: "121343304320",
+  appId: "1:121343304320:web:6f6108764ad9cefdc1bc65"
 };
 
 // We check if the config is valid so the app doesn't crash during the UI preview

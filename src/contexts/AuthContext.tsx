@@ -39,15 +39,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const setMockUser = useCallback(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem('karma_mock_user', 'true');
+    }
+    setCurrentUser({
+      uid: 'mock-founder',
+      email: 'founder@karmaos.ai',
+      displayName: 'Hackmaass',
+      photoURL: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+    } as User);
+  }, []);
+
   useEffect(() => {
-    // If Firebase is bypassed or not configured, we default to a mock "Founder" user to bypass the login
+    // If Firebase is bypassed or not configured, check localStorage before autologging in
     if (BYPASS_FIREBASE || !isFirebaseConfigured || !auth) {
-      setCurrentUser({
-        uid: 'mock-founder',
-        email: 'founder@karmaos.ai',
-        displayName: 'Hackmaass',
-        photoURL: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-      } as User);
+      if (typeof window !== "undefined" && window.localStorage.getItem('karma_mock_user') === 'true') {
+        setMockUser();
+      } else {
+        setCurrentUser(null);
+      }
       setLoading(false);
       return;
     }
@@ -68,8 +79,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const loginWithGoogle = useCallback(async () => {
-    if (!isFirebaseConfigured || !auth) {
-      console.warn("Firebase is not configured yet. Please add your config to src/lib/firebase.ts");
+    if (BYPASS_FIREBASE || !isFirebaseConfigured || !auth) {
+      setMockUser();
       return;
     }
     try {
@@ -81,8 +92,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const loginWithGithub = useCallback(async () => {
-    if (!isFirebaseConfigured || !auth) {
-      console.warn("Firebase is not configured yet. Please add your config to src/lib/firebase.ts");
+    if (BYPASS_FIREBASE || !isFirebaseConfigured || !auth) {
+      setMockUser();
       return;
     }
     try {
@@ -94,8 +105,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const loginWithMicrosoft = useCallback(async () => {
-    if (!isFirebaseConfigured || !auth) {
-      console.warn("Firebase is not configured yet. Please add your config to src/lib/firebase.ts");
+    if (BYPASS_FIREBASE || !isFirebaseConfigured || !auth) {
+      setMockUser();
       return;
     }
     try {
@@ -137,6 +148,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     if (BYPASS_FIREBASE || !isFirebaseConfigured || !auth) {
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem('karma_mock_user');
+      }
       setCurrentUser(null);
       return;
     }

@@ -100,10 +100,6 @@ export default function LoginPage() {
 
   const handleOAuth = async (provider: 'google' | 'github' | 'microsoft') => {
     setError(null);
-    if (!isFirebaseConfigured) {
-      navigate('/app');
-      return;
-    }
     setOauthLoading(provider);
     try {
       if (provider === 'google') await loginWithGoogle();
@@ -126,7 +122,9 @@ export default function LoginPage() {
       return;
     }
     if (!isFirebaseConfigured) {
-      navigate('/app');
+      // Mock login for email
+      await loginWithGoogle();
+      navigate('/app', { replace: true });
       return;
     }
     setEmailLoading(true);

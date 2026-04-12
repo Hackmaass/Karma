@@ -59,8 +59,8 @@ export default function LandingPage() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-100/80 to-teal-100/80 text-sm font-medium text-emerald-800 mb-8 border border-emerald-200/50">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            The Workforce Operating System
+            <img src="/favicon.svg" alt="" className="w-3.5 h-3.5" />
+            AI powered HR workforce
           </div>
           <h1 className="text-[4.5rem] md:text-[5.5rem] leading-[0.92] font-medium tracking-[-0.03em] mb-8">
             Hire. Manage.<br />
@@ -383,7 +383,7 @@ export default function LandingPage() {
           <div className="pt-8 border-t border-black/[0.08] flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-black rounded-full" />
-              <span className="text-xs text-black/40">KarmaOS — The Workforce Operating System</span>
+              <span className="text-xs text-black/40">KarmaOS — AI powered HR workforce</span>
             </div>
             <div className="text-xs text-black/30">
               © 2026 KarmaOS Inc. All rights reserved.

@@ -213,7 +213,11 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={emailLoading}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#1a1a1a] text-white text-sm font-medium py-3 hover:bg-black/90 disabled:opacity-60 dark:bg-white dark:text-zinc-950 dark:hover:bg-white/90"
+              className={cn(
+                'w-full flex items-center justify-center gap-2 rounded-xl text-sm font-medium py-3 transition-colors',
+                'bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-55',
+                'dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100'
+              )}
             >
               {emailLoading ? 'Signing in…' : 'Continue'}
               <ArrowRight className="w-4 h-4" />
@@ -397,14 +401,14 @@ export default function LoginPage() {
       <div
         className={cn(
           'hidden lg:flex flex-1 flex-col justify-between p-12 xl:p-16 min-h-screen max-w-[52%] border-l',
-          'bg-[#ECECED] border-black/[0.06]',
-          'dark:bg-zinc-950 dark:border-white/[0.06]'
+          'bg-zinc-200/80 border-zinc-300/80',
+          'dark:bg-zinc-950 dark:border-white/10'
         )}
       >
         <div className="max-w-lg">
-          <div className="flex gap-1 mb-4" aria-hidden>
+          <div className="flex gap-1 mb-4 text-amber-500 dark:text-amber-400" aria-hidden>
             {[1, 2, 3, 4, 5].map((i) => (
-              <span key={i} className="text-page-text text-lg leading-none opacity-90">
+              <span key={i} className="text-lg leading-none drop-shadow-sm">
                 ★
               </span>
             ))}
@@ -417,13 +421,13 @@ export default function LoginPage() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.35 }}
             >
-              <p className="text-lg font-medium text-page-text leading-snug tracking-tight mb-4">
+              <p className="text-lg font-medium text-zinc-900 dark:text-zinc-100 leading-snug tracking-tight mb-4">
                 &ldquo;{TESTIMONIALS[slide % TESTIMONIALS.length].quote}&rdquo;
               </p>
-              <p className="text-sm font-semibold text-page-text">
+              <p className="text-sm font-semibold text-zinc-900 dark:text-white">
                 {TESTIMONIALS[slide % TESTIMONIALS.length].name}
               </p>
-              <p className="text-sm text-black/50 dark:text-white/50">
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
                 {TESTIMONIALS[slide % TESTIMONIALS.length].role}
               </p>
             </motion.div>
@@ -433,8 +437,8 @@ export default function LoginPage() {
         <div
           className={cn(
             'relative mt-8 rounded-2xl border overflow-hidden aspect-[16/10] max-h-[min(420px,42vh)]',
-            'border-black/[0.06] bg-white shadow-[0_20px_50px_-20px_rgba(0,0,0,0.15)]',
-            'dark:border-white/[0.1] dark:bg-zinc-900/50 dark:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)]'
+            'border-zinc-300/80 bg-white shadow-[0_20px_50px_-20px_rgba(0,0,0,0.12)] ring-1 ring-black/[0.04]',
+            'dark:border-white/15 dark:bg-zinc-900 dark:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] dark:ring-white/10'
           )}
         >
           <AnimatePresence mode="wait">
@@ -450,17 +454,17 @@ export default function LoginPage() {
             </motion.div>
           </AnimatePresence>
 
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10 px-2 py-1 rounded-full bg-black/40 dark:bg-black/60 backdrop-blur-sm">
             {SCREENSHOT_PATHS.map((_, i) => (
               <button
                 key={i}
                 type="button"
                 onClick={() => setSlide(i)}
                 className={cn(
-                  'h-2 rounded-full transition-all',
+                  'h-2 rounded-full transition-all shadow-sm',
                   i === slide
-                    ? 'w-6 bg-[#111] dark:bg-white'
-                    : 'w-2 bg-black/25 hover:bg-black/40 dark:bg-white/25 dark:hover:bg-white/45'
+                    ? 'w-6 bg-white'
+                    : 'w-2 bg-white/50 hover:bg-white/80'
                 )}
                 aria-label={`Show screenshot ${i + 1}`}
               />
@@ -470,9 +474,9 @@ export default function LoginPage() {
             type="button"
             onClick={() => goSlide(-1)}
             className={cn(
-              'absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full border shadow-sm flex items-center justify-center transition-colors',
-              'bg-white/95 border-black/[0.08] text-black/65 hover:text-black hover:bg-white',
-              'dark:bg-zinc-800/95 dark:border-white/[0.12] dark:text-white/70 dark:hover:text-white dark:hover:bg-zinc-800'
+              'absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full border shadow-md flex items-center justify-center transition-colors',
+              'bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900',
+              'dark:bg-zinc-800 dark:border-white/20 dark:text-white dark:hover:bg-zinc-700'
             )}
             aria-label="Previous screenshot"
           >
@@ -482,9 +486,9 @@ export default function LoginPage() {
             type="button"
             onClick={() => goSlide(1)}
             className={cn(
-              'absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full border shadow-sm flex items-center justify-center transition-colors',
-              'bg-white/95 border-black/[0.08] text-black/65 hover:text-black hover:bg-white',
-              'dark:bg-zinc-800/95 dark:border-white/[0.12] dark:text-white/70 dark:hover:text-white dark:hover:bg-zinc-800'
+              'absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full border shadow-md flex items-center justify-center transition-colors',
+              'bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900',
+              'dark:bg-zinc-800 dark:border-white/20 dark:text-white dark:hover:bg-zinc-700'
             )}
             aria-label="Next screenshot"
           >
@@ -501,12 +505,12 @@ function ScreenshotSlide({ src, index }: { src: string; index: number }) {
 
   if (failed) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-black/[0.04] to-black/[0.08] dark:from-white/[0.04] dark:to-white/[0.07] p-8 text-center">
-        <p className="text-sm font-medium text-black/55 dark:text-white/55 mb-1">Screenshot {index + 1}</p>
-        <p className="text-xs text-black/40 dark:text-white/40 max-w-xs">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900 p-8 text-center">
+        <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">Screenshot {index + 1}</p>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs">
           Add your image at{' '}
-          <code className="text-black/55 dark:text-white/55 font-mono text-[11px]">public{src}</code> — it will appear
-          here automatically.
+          <code className="text-zinc-800 dark:text-zinc-300 font-mono text-[11px] break-all">public{src}</code> — it
+          will appear here automatically.
         </p>
       </div>
     );

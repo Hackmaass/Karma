@@ -352,20 +352,24 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={emailLoading || oauthLoading !== null}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#1a1a1a] text-white text-sm font-medium py-3.5 hover:bg-black/90 disabled:opacity-50 transition-colors dark:bg-white dark:text-zinc-950 dark:hover:bg-white/90"
+              className={cn(
+                'w-full flex items-center justify-center gap-2 rounded-xl text-sm font-medium py-3.5 transition-colors',
+                'bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-55',
+                'dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100'
+              )}
             >
               {emailLoading ? 'Sending link…' : 'Continue'}
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-black/[0.06] dark:border-white/[0.08] text-center text-sm text-black/50 dark:text-white/50">
+          <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-white/10 text-center text-sm text-zinc-600 dark:text-zinc-300">
             {mode === 'signup' ? (
               <>
                 Already have an account?{' '}
                 <Link
                   to="/login"
-                  className="font-semibold text-page-text hover:underline underline-offset-2"
+                  className="font-semibold text-zinc-900 dark:text-white hover:underline underline-offset-2"
                 >
                   Sign in
                 </Link>
@@ -375,7 +379,7 @@ export default function LoginPage() {
                 Don&apos;t have an account?{' '}
                 <Link
                   to="/login?mode=signup"
-                  className="font-semibold text-page-text hover:underline underline-offset-2"
+                  className="font-semibold text-zinc-900 dark:text-white hover:underline underline-offset-2"
                 >
                   Sign up
                 </Link>
@@ -383,7 +387,7 @@ export default function LoginPage() {
             )}
           </div>
 
-          <p className="mt-6 text-center text-[11px] text-black/35 dark:text-white/35">
+          <p className="mt-6 text-center text-[11px] text-zinc-400 dark:text-zinc-500">
             Secured with Firebase Authentication
           </p>
         </motion.div>

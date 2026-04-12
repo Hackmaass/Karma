@@ -14,6 +14,10 @@ import TeamInsights from './pages/TeamInsights';
 import EmployeeView from './pages/EmployeeView';
 import TalentIntelligence from './pages/TalentIntelligence';
 import Settings from './pages/Settings';
+import LeaveManagement from './pages/LeaveManagement';
+import Attendance from './pages/Attendance';
+import Automation from './pages/Automation';
+import HiringAutomation from './pages/HiringAutomation';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { currentUser } = useAuth();
@@ -42,6 +46,10 @@ export default function App() {
             <Route path="talent" element={<TalentIntelligence />} />
             <Route path="team" element={<TeamInsights />} />
             <Route path="employee/:id" element={<EmployeeView />} />
+            <Route path="leave" element={<LeaveManagement />} />
+            <Route path="attendance" element={<Attendance />} />
+            <Route path="automation" element={<Automation />} />
+            <Route path="hiring" element={<HiringAutomation />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>

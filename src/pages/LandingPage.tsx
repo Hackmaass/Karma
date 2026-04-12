@@ -1,13 +1,15 @@
 import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Activity, Brain, Briefcase } from 'lucide-react';
+import { ArrowRight, Activity, Brain, Briefcase, Moon, Sun } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { isFirebaseConfigured } from '../lib/firebase';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function LandingPage() {
   const { loginWithGoogle, currentUser } = useAuth();
   const navigate = useNavigate();
+  const { theme, setTheme, isDark } = useTheme();
 
   // Redirect to app if already logged in
   useEffect(() => {
@@ -26,14 +28,21 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#111111] font-sans selection:bg-black selection:text-white">
+    <div className="min-h-screen bg-page-bg text-page-text font-sans selection:bg-black selection:text-white">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 bg-[#FAFAFA]/80 backdrop-blur-md border-b border-black/[0.04]">
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 bg-page-bg/80 backdrop-blur-md border-b border-black/[0.04]">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-black rounded-full" />
           <span className="font-medium tracking-tight text-lg">KarmaOS</span>
         </div>
         <div className="flex items-center gap-6">
+          <button 
+            onClick={() => setTheme(isDark ? 'light' : 'dark')}
+            className="p-2 hover:bg-black/[0.04] rounded-full transition-colors text-black/60 hover:text-black"
+            title="Toggle theme"
+          >
+            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
           <button onClick={handleLogin} className="text-sm font-medium text-black/60 hover:text-black transition-colors">
             Sign In
           </button>
@@ -86,13 +95,13 @@ export default function LandingPage() {
           className="relative rounded-[2.5rem] bg-white border border-black/[0.04] shadow-[0_8px_40px_-12px_rgba(0,0,0,0.05)] overflow-hidden aspect-[16/10] flex flex-col"
         >
           {/* Fake Window Chrome */}
-          <div className="h-12 border-b border-black/[0.04] flex items-center px-6 gap-2 bg-[#FAFAFA]/50">
+          <div className="h-12 border-b border-black/[0.04] flex items-center px-6 gap-2 bg-page-bg/50">
             <div className="w-3 h-3 rounded-full bg-black/10" />
             <div className="w-3 h-3 rounded-full bg-black/10" />
             <div className="w-3 h-3 rounded-full bg-black/10" />
           </div>
           {/* Fake UI Content */}
-          <div className="flex-1 p-12 flex flex-col gap-8 bg-[#FAFAFA]/30">
+          <div className="flex-1 p-12 flex flex-col gap-8 bg-page-bg/30">
             <div className="max-w-3xl">
               <div className="flex items-center gap-2 mb-4">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
@@ -194,7 +203,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#FAFAFA] pt-16 pb-8 border-t border-black/[0.04]">
+      <footer className="bg-page-bg pt-16 pb-8 border-t border-black/[0.04]">
         <div className="max-w-5xl mx-auto px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             <div className="flex flex-col gap-3">

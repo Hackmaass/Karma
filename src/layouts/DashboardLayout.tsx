@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, User, Settings, Search, Sparkles, LogOut, Briefcase, ChevronDown, ChevronUp } from 'lucide-react';
+import { LayoutDashboard, Users, User, Settings, Search, Sparkles, LogOut, Briefcase, ChevronDown, ChevronUp, Moon, Sun, CalendarOff, Clock, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
 import AiAssistant from '../components/AiAssistant';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchAllEmployees, EnrichedEmployee } from '../lib/dataService';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function DashboardLayout() {
   const [isAiOpen, setIsAiOpen] = useState(false);
@@ -12,6 +13,7 @@ export default function DashboardLayout() {
   const [showAllEmployees, setShowAllEmployees] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { currentUser, logout } = useAuth();
+  const { theme, setTheme, isDark } = useTheme();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,9 +37,9 @@ export default function DashboardLayout() {
   const sidebarEmployees = showAllEmployees ? employees.slice(0, 20) : employees.slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#111111] font-sans flex selection:bg-black selection:text-white">
+    <div className="min-h-screen bg-page-bg text-page-text font-sans flex selection:bg-black selection:text-white">
       {/* Minimal Sidebar */}
-      <aside className="w-64 border-r border-black/[0.04] bg-[#FAFAFA] flex flex-col">
+      <aside className="w-64 border-r border-black/[0.04] bg-page-bg flex flex-col">
         <div className="h-16 flex items-center px-6 border-b border-black/[0.04]">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 bg-black rounded-full" />
@@ -49,7 +51,13 @@ export default function DashboardLayout() {
           <div className="text-xs font-medium text-black/40 uppercase tracking-wider mb-2 px-2">Intelligence</div>
           <NavItem to="/app" icon={<LayoutDashboard className="w-4 h-4" />} label="System Overview" end />
           <NavItem to="/app/talent" icon={<Briefcase className="w-4 h-4" />} label="Talent (Hiring)" />
+          <NavItem to="/app/hiring" icon={<Search className="w-4 h-4" />} label="Hiring Automation" />
           <NavItem to="/app/team" icon={<Users className="w-4 h-4" />} label="Work (Performance)" />
+          
+          <div className="text-xs font-medium text-black/40 uppercase tracking-wider mb-2 mt-8 px-2">Operations</div>
+          <NavItem to="/app/leave" icon={<CalendarOff className="w-4 h-4" />} label="Leave Management" />
+          <NavItem to="/app/attendance" icon={<Clock className="w-4 h-4" />} label="Attendance" />
+          <NavItem to="/app/automation" icon={<Zap className="w-4 h-4" />} label="Automation" />
           
           <div className="text-xs font-medium text-black/40 uppercase tracking-wider mb-2 mt-8 px-2 flex items-center justify-between">
             <span>Work DNA Profiles</span>
@@ -94,7 +102,7 @@ export default function DashboardLayout() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
         {/* Top Bar */}
-        <header className="h-16 border-b border-black/[0.04] bg-[#FAFAFA]/80 backdrop-blur-md flex items-center justify-between px-8 shrink-0 z-10">
+        <header className="h-16 border-b border-black/[0.04] bg-page-bg/80 backdrop-blur-md flex items-center justify-between px-8 shrink-0 z-10">
           <div className="flex items-center gap-4 flex-1 relative">
             <div className="relative w-96">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-black/40" />
@@ -145,6 +153,13 @@ export default function DashboardLayout() {
             >
               <Sparkles className="w-4 h-4 text-black/60" />
               <span>Founder Assistant</span>
+            </button>
+            <button 
+              onClick={() => setTheme(isDark ? 'light' : 'dark')}
+              className="p-2 hover:bg-black/[0.04] rounded-full transition-colors text-black/60 hover:text-black"
+              title="Toggle theme"
+            >
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
             <div className="flex items-center gap-3 pl-4 border-l border-black/[0.04]">
               <div className="w-8 h-8 rounded-full bg-black/10 overflow-hidden">

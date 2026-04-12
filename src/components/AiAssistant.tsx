@@ -132,7 +132,7 @@ export default function AiAssistant({ isOpen, onClose }: { isOpen: boolean; onCl
                   {msg.role === 'assistant' && <div className="text-sm text-black/40 font-medium px-4">Founder Assistant</div>}
                   <div className={`border border-black/[0.04] p-4 text-sm leading-relaxed ${msg.role === 'user'
                     ? 'bg-black text-white rounded-2xl rounded-tr-none'
-                    : 'bg-[#FAFAFA] text-black/80 rounded-2xl rounded-tl-none'
+                    : 'bg-page-bg text-black/80 rounded-2xl rounded-tl-none'
                     }`}>
                     {msg.content}
                   </div>
@@ -142,7 +142,7 @@ export default function AiAssistant({ isOpen, onClose }: { isOpen: boolean; onCl
               {isLoading && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-2 items-start">
                   <div className="text-sm text-black/40 font-medium px-4">Founder Assistant</div>
-                  <div className="bg-[#FAFAFA] border border-black/[0.04] rounded-2xl rounded-tl-none p-4 flex items-center gap-2">
+                  <div className="bg-page-bg border border-black/[0.04] rounded-2xl rounded-tl-none p-4 flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-black/40" />
                     <span className="text-sm text-black/40">Thinking...</span>
                   </div>
@@ -167,7 +167,7 @@ export default function AiAssistant({ isOpen, onClose }: { isOpen: boolean; onCl
             </div>
 
             {/* Input Area */}
-            <div className="p-4 border-t border-black/[0.04] bg-[#FAFAFA]/50 shrink-0">
+            <div className="p-4 border-t border-black/[0.04] bg-page-bg/50 shrink-0">
               <div className="relative flex items-center">
                 <input
                   type="text"
@@ -198,7 +198,7 @@ function SuggestedPrompt({ text, onClick }: { text: string; onClick: () => void 
   return (
     <button
       onClick={onClick}
-      className="text-left px-4 py-3 rounded-xl border border-black/[0.04] bg-white hover:bg-[#FAFAFA] hover:border-black/[0.08] transition-all text-sm text-black/60 hover:text-black"
+      className="text-left px-4 py-3 rounded-xl border border-black/[0.04] bg-white hover:bg-page-bg hover:border-black/[0.08] transition-all text-sm text-black/60 hover:text-black"
     >
       {text}
     </button>

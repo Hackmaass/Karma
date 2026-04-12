@@ -50,7 +50,7 @@ export default function LoginPage() {
   const [confirmEmail, setConfirmEmail] = useState('');
   const [pendingLinkCompletion, setPendingLinkCompletion] = useState(false);
   const [slide, setSlide] = useState(0);
-  const [oauthLoading, setOauthLoading] = useState<'google' | 'microsoft' | null>(null);
+  const [oauthLoading, setOauthLoading] = useState<'google' | 'github' | 'microsoft' | null>(null);
   const [emailLoading, setEmailLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

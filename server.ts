@@ -198,7 +198,7 @@ let cachedEmployees: EnrichedEmployee[] | null = null;
 function loadEmployees(): EnrichedEmployee[] {
   if (cachedEmployees) return cachedEmployees;
 
-  const filePath = path.join(process.cwd(), 'Employees.xlsx');
+  const filePath = path.join(process.cwd(), 'public', 'Employees.xlsx');
   const buffer = fs.readFileSync(filePath);
   const workbook = XLSX.read(buffer, { type: 'buffer' });
   const sheetName = workbook.SheetNames[0];

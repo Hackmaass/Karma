@@ -1,82 +1,52 @@
 // src/lib/dataService.ts
-// This service provides an abstraction layer for data fetching.
-// Currently, it returns hardcoded mock data, but you can easily swap these
-// implementations to fetch from Kaggle datasets (JSON/CSV) or a real backend.
+// This service fetches data from the server's Excel-backed API.
+// The server reads Employees.xlsx and enriches each record with synthetic work pattern data.
 
-export const mockWorkforceData = {
-  teams: {
-    engineering: {
-      status: "focused",
-      deepWorkAverage: "68%",
-      bottlenecks: ["design approvals for core-api", "PR reviews taking 48h+"]
-    },
-    design: {
-      status: "overloaded",
-      deepWorkAverage: "30%",
-      bottlenecks: ["too many context switches", "ad-hoc requests from marketing"]
-    }
-  },
-  recruiting: {
-    openRoles: ["Senior Backend"],
-    activeCandidates: 14,
-    finalStages: 2
-  },
-  alerts: [
-    { employee: "Sarah M.", issue: "working late, 18 meetings in 3 days", risk: "high" }
-  ]
-};
-
-interface MockEmployee {
+export interface EnrichedEmployee {
+  id: number;
+  firstName: string;
+  lastName: string;
   name: string;
+  gender: string;
+  startDate: string;
+  yearsAtCompany: number;
+  department: string;
+  country: string;
+  center: string;
+  monthlySalary: number;
+  annualSalary: number;
+  jobRate: number;
+  sickLeaves: number;
+  unpaidLeaves: number;
+  overtimeHours: number;
   role: string;
-  hiringProfile: {
-    technicalScore: string;
-    dna: string;
-    strengths: string[];
-  };
-  currentWorkData: {
-    deepWorkRatio: string;
-    meetingLoad: string;
-    communication: string;
-    recentOutput: string;
-    focusBlocks: string;
-  };
+  workDna: string;
+  deepWorkRatio: string;
+  meetingLoad: string;
+  communicationStyle: string;
+  recentOutput: string;
+  focusBlocks: string;
+  overloadRisk: 'low' | 'medium' | 'high';
 }
 
-export const mockEmployees: Record<string, MockEmployee> = {
-  '1': {
-    name: 'Alex Chen',
-    role: 'Senior Engineer',
-    hiringProfile: {
-      technicalScore: "95%",
-      dna: "Maker",
-      strengths: ["system design", "independent problem solving"]
-    },
-    currentWorkData: {
-      deepWorkRatio: "65%",
-      meetingLoad: "15%",
-      communication: "Mostly async via PRs",
-      recentOutput: "High code output, minimal coordination overhead",
-      focusBlocks: "Averaging 3 hours uninterrupted"
-    }
-  },
-  '2': {
-    name: 'Sarah Miller',
-    role: 'Product Manager',
-    hiringProfile: {
-      technicalScore: "88%",
-      dna: "Synchronizer",
-      strengths: ["cross-functional communication", "alignment"]
-    },
-    currentWorkData: {
-      deepWorkRatio: "15%",
-      meetingLoad: "40%",
-      communication: "Heavy Slack usage, answering late into evening",
-      recentOutput: "Trapped in low-impact alignment meetings",
-      focusBlocks: "Severely fragmented, 18 meetings in 3 days"
-    }
-  }
-};
+export interface DepartmentStats {
+  count: number;
+  avgDeepWork: number;
+  highRiskCount: number;
+  totalOvertime: number;
+}
+
+export interface WorkforceData {
+  total: number;
+  employees: EnrichedEmployee[];
+  departments: Record<string, DepartmentStats>;
+  alerts: {
+    employee: string;
+    issue: string;
+    risk: string;
+    department: string;
+  }[];
+}
 
 export const mockTalentData = {
   pipeline: {
@@ -108,46 +78,57 @@ export const mockTalentData = {
 };
 
 /**
- * Fetches workforce data for the Dashboard.
- * OPENING FOR KAGGLE INTEGRATION: Replace the return statement with a fetch call to your Kaggle JSON/CSV.
+ * Fetches workforce data from the server's Excel-backed API.
+ * Returns all employees with department-level aggregations and risk alerts.
  */
-export async function fetchWorkforceData() {
-  // Example Kaggle Integration:
-  // try {
-  //   const response = await fetch('/data/kaggle_workforce.json');
-  //   return await response.json();
-  // } catch (e) {
-  //   console.error("Failed to load Kaggle data, falling back to mock", e);
-  // }
-  
-  return mockWorkforceData;
+export async function fetchWorkforceData(): Promise<WorkforceData> {
+  try {
+    const response = await fetch('/api/employees');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  } catch (e) {
+    console.error("Failed to fetch workforce data from API:", e);
+    // Minimal fallback so the page doesn't crash
+    return {
+      total: 0,
+      employees: [],
+      departments: {},
+      alerts: [],
+    };
+  }
 }
 
 /**
- * Fetches specific employee data for the Employee View.
- * OPENING FOR KAGGLE INTEGRATION: Fetch your dataset, find the employee by ID, and map to this structure.
+ * Fetches a specific employee by ID from the server's Excel-backed API.
  */
-export async function fetchEmployeeData(id: string) {
-  // Example Kaggle Integration:
-  // try {
-  //   const response = await fetch('/data/kaggle_employees.json');
-  //   const allEmployees = await response.json();
-  //   return allEmployees.find((emp: any) => emp.id === id) || mockEmployees['1'];
-  // } catch (e) { ... }
+export async function fetchEmployeeData(id: string): Promise<EnrichedEmployee | null> {
+  try {
+    const response = await fetch(`/api/employees/${id}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  } catch (e) {
+    console.error(`Failed to fetch employee #${id}:`, e);
+    return null;
+  }
+}
 
-  return mockEmployees[id] || mockEmployees['1'];
+/**
+ * Fetches all employees (lightweight wrapper for components that need the list).
+ */
+export async function fetchAllEmployees(): Promise<EnrichedEmployee[]> {
+  try {
+    const data = await fetchWorkforceData();
+    return data.employees;
+  } catch (e) {
+    console.error("Failed to fetch employees list:", e);
+    return [];
+  }
 }
 
 /**
  * Fetches talent pipeline data for the Recruiter Agent.
- * OPENING FOR KAGGLE INTEGRATION: Replace with a fetch call to your Kaggle ATS/Recruiting dataset.
+ * Still uses mock data as recruiting pipeline is separate from employee records.
  */
 export async function fetchTalentData() {
-  // Example Kaggle Integration:
-  // try {
-  //   const response = await fetch('/data/kaggle_talent.json');
-  //   return await response.json();
-  // } catch (e) { ... }
-
   return mockTalentData;
 }

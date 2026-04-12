@@ -58,6 +58,11 @@ interface EnrichedEmployee {
   recentOutput: string;
   focusBlocks: string;
   overloadRisk: 'low' | 'medium' | 'high';
+  // GitHub / Dev Specifics
+  githubHandle?: string;
+  commitsLast30Days?: number;
+  prsOpened?: number;
+  codeReviewRatio?: string;
 }
 
 function deriveRole(department: string, years: number): string {
@@ -141,6 +146,22 @@ function enrichEmployee(raw: RawEmployee): EnrichedEmployee {
   if (overtime > 50 || sickLeaves >= 5) overloadRisk = 'high';
   else if (overtime > 20 || sickLeaves >= 3) overloadRisk = 'medium';
 
+  const isDev = department === 'IT' || department === 'Product Development' || department === 'Research Center';
+  let githubData = {};
+  
+  if (isDev) {
+    const handle = `${raw['First Name'].toLowerCase()}-${raw['Last Name'].toLowerCase()}`;
+    const commits = 20 + Math.floor(Math.abs(raw.No * 19) % 80);
+    const prs = 5 + Math.floor(Math.abs(raw.No * 7) % 15);
+    const reviewBase = 60 + Math.floor(Math.abs(raw.No * 3) % 40);
+    githubData = {
+      githubHandle: handle,
+      commitsLast30Days: commits,
+      prsOpened: prs,
+      codeReviewRatio: `${reviewBase}%`,
+    };
+  }
+
   return {
     id: raw.No,
     firstName: raw['First Name'],
@@ -168,6 +189,7 @@ function enrichEmployee(raw: RawEmployee): EnrichedEmployee {
     recentOutput,
     focusBlocks,
     overloadRisk,
+    ...githubData,
   };
 }
 

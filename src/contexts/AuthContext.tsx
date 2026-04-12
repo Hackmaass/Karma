@@ -11,6 +11,7 @@ import {
 import {
   auth,
   googleProvider,
+  githubProvider,
   microsoftProvider,
   isFirebaseConfigured,
 } from '../lib/firebase';
@@ -19,6 +20,7 @@ interface AuthContextType {
   currentUser: User | null;
   loading: boolean;
   loginWithGoogle: () => Promise<void>;
+  loginWithGithub: () => Promise<void>;
   loginWithMicrosoft: () => Promise<void>;
   sendSignInEmailLink: (email: string) => Promise<void>;
   completeSignInWithEmailLink: (email: string) => Promise<void>;
@@ -59,6 +61,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await signInWithPopup(auth, googleProvider);
     } catch (error) {
       console.error("Error signing in with Google", error);
+      throw error;
+    }
+  }, []);
+
+  const loginWithGithub = useCallback(async () => {
+    if (!isFirebaseConfigured || !auth) {
+      console.warn("Firebase is not configured yet. Please add your config to src/lib/firebase.ts");
+      return;
+    }
+    try {
+      await signInWithPopup(auth, githubProvider);
+    } catch (error) {
+      console.error("Error signing in with GitHub", error);
       throw error;
     }
   }, []);
@@ -129,6 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       currentUser,
       loading,
       loginWithGoogle,
+      loginWithGithub,
       loginWithMicrosoft,
       sendSignInEmailLink,
       completeSignInWithEmailLink,

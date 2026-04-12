@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Activity, Brain, Briefcase, Moon, Sun, Zap, CalendarOff, Clock, Search, Plug, Shield, Globe, Users, ChevronRight } from 'lucide-react';
-import { FaSlack, FaMicrosoft, FaEnvelope, FaDiscord, FaLinkedin, FaGoogle } from 'react-icons/fa';
+import { FaSlack, FaMicrosoft, FaEnvelope, FaDiscord, FaLinkedin, FaGoogle, FaGithub } from 'react-icons/fa';
 import LogoLoop from '../components/LogoLoop';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -292,6 +292,7 @@ export default function LandingPage() {
                 { node: <FaDiscord />, name: 'Discord', color: '#5865F2' } as any,
                 { node: <FaGoogle />, name: 'Google Workspace', color: '#4285F4' } as any,
                 { node: <FaLinkedin />, name: 'LinkedIn', color: '#0A66C2' } as any,
+                { node: <FaGithub />, name: 'GitHub', color: '#181717' } as any,
                 { node: <div className="font-bold font-serif text-[18px] leading-none">N</div>, name: 'Naukri', color: '#4A00E0' } as any,
               ]}
               speed={45}

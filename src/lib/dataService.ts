@@ -224,10 +224,16 @@ export const mockTalentData = {
 export async function fetchWorkforceData(): Promise<WorkforceData> {
   try {
     const response = await fetch('/api/employees');
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const contentType = response.headers.get("content-type");
+    if (!response.ok || !contentType || !contentType.includes("application/json")) {
+      throw new Error(`HTTP ${response.status} or non-JSON response`);
+    }
     return await response.json();
   } catch (e) {
-    console.warn("Failed to fetch workforce data from API, falling back to local file...", e);
+    const isNetworkOrParseError = e instanceof TypeError || e instanceof SyntaxError || (e as Error).message.includes('non-JSON');
+    if (!isNetworkOrParseError) {
+      console.warn("Failed to fetch workforce data from API, falling back to local file...", e);
+    }
     
     // Client-side fallback for static deployments (Vercel)
     try {

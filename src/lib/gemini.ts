@@ -21,6 +21,14 @@ export interface DashboardInsights {
   }[];
 }
 
+async function safeJson(response: Response) {
+  const contentType = response.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    throw new SyntaxError("Not JSON");
+  }
+  return await response.json();
+}
+
 export async function generateDashboardInsights(workforceData: unknown): Promise<DashboardInsights | null> {
   try {
     const response = await fetch('/api/gemini/dashboard', {
@@ -29,13 +37,15 @@ export async function generateDashboardInsights(workforceData: unknown): Promise
       body: JSON.stringify(workforceData),
     });
     if (!response.ok) {
-      const err = await response.json();
+      const err = await safeJson(response);
       console.error('Dashboard insights error:', err.error);
       return null;
     }
-    return await response.json();
+    return await safeJson(response);
   } catch (error) {
-    console.error("Error generating dashboard insights:", error);
+    if (!(error instanceof SyntaxError)) {
+      console.error("Error generating dashboard insights:", error);
+    }
     return null;
   }
 }
@@ -64,13 +74,15 @@ export async function generateTalentInsights(talentData: unknown): Promise<Talen
       body: JSON.stringify(talentData),
     });
     if (!response.ok) {
-      const err = await response.json();
+      const err = await safeJson(response);
       console.error('Talent insights error:', err.error);
       return null;
     }
-    return await response.json();
+    return await safeJson(response);
   } catch (error) {
-    console.error("Error generating talent insights:", error);
+    if (!(error instanceof SyntaxError)) {
+      console.error("Error generating talent insights:", error);
+    }
     return null;
   }
 }
@@ -93,13 +105,15 @@ export async function generateEmployeeInsights(employeeData: unknown): Promise<E
       body: JSON.stringify(employeeData),
     });
     if (!response.ok) {
-      const err = await response.json();
+      const err = await safeJson(response);
       console.error('Employee insights error:', err.error);
       return null;
     }
-    return await response.json();
+    return await safeJson(response);
   } catch (error) {
-    console.error("Error generating employee insights:", error);
+    if (!(error instanceof SyntaxError)) {
+      console.error("Error generating employee insights:", error);
+    }
     return null;
   }
 }
@@ -115,12 +129,15 @@ export async function chatWithAssistant(message: string, systemContext: string):
       body: JSON.stringify({ message, systemContext }),
     });
     if (!response.ok) {
-      const err = await response.json();
+      const err = await safeJson(response);
       throw new Error(err.error || 'Failed to get response');
     }
-    const data = await response.json();
+    const data = await safeJson(response);
     return data.text;
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      return "Assistant is unavailable in static deployment mode.";
+    }
     console.error("Error in chat:", error);
     return "Sorry, I encountered an error connecting to my intelligence core.";
   }

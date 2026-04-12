@@ -337,7 +337,7 @@ export default function LandingPage() {
 
       {/* Security + Privacy */}
       <section className="py-24 max-w-5xl mx-auto px-8">
-        <div className="bg-gradient-to-br from-slate-50 to-zinc-50 border border-black/[0.04] rounded-3xl p-12 flex items-center gap-12">
+        <div className="bg-white border border-black/[0.04] rounded-3xl p-12 flex items-center gap-12">
           <div className="p-4 rounded-2xl bg-black/[0.03] shrink-0">
             <Shield className="w-8 h-8 text-black/40" />
           </div>

@@ -13,8 +13,12 @@ const firebaseConfig = {
   appId: "1:121343304320:web:6f6108764ad9cefdc1bc65"
 };
 
+// --- EMERGENCY BYPASS ---
+// Set this to true to ignore the config above and use mock data everywhere.
+export const BYPASS_FIREBASE = true;
+
 // We check if the config is valid so the app doesn't crash during the UI preview
-export const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
+export const isFirebaseConfigured = !BYPASS_FIREBASE && firebaseConfig.apiKey !== "YOUR_API_KEY";
 
 export const app = isFirebaseConfigured ? initializeApp(firebaseConfig) : null;
 export const auth = isFirebaseConfigured ? getAuth(app!) : null;

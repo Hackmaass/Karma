@@ -14,6 +14,7 @@ import {
   githubProvider,
   microsoftProvider,
   isFirebaseConfigured,
+  BYPASS_FIREBASE,
 } from '../lib/firebase';
 
 interface AuthContextType {
@@ -39,8 +40,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // If Firebase isn't configured, we default to a mock "Founder" user to bypass the login
-    if (!isFirebaseConfigured || !auth) {
+    // If Firebase is bypassed or not configured, we default to a mock "Founder" user to bypass the login
+    if (BYPASS_FIREBASE || !isFirebaseConfigured || !auth) {
       setCurrentUser({
         uid: 'mock-founder',
         email: 'founder@karmaos.ai',
@@ -52,16 +53,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // If no real user is logged in, we still provide the mock user to bypass the wall
       if (user) {
         setCurrentUser(user);
       } else {
-        setCurrentUser({
-          uid: 'mock-founder',
-          email: 'founder@karmaos.ai',
-          displayName: 'Hackmaass',
-          photoURL: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-        } as User);
+        // Fallback for demo: even if auth works but no user is logged in, we can still provide mock 
+        // but typically if isFirebaseConfigured is true, we want real auth behavior.
+        // However, the user said "bypass", so we stick to the mock if they want.
+        setCurrentUser(null);
       }
       setLoading(false);
     });
@@ -138,7 +136,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    if (!isFirebaseConfigured || !auth) return;
+    if (BYPASS_FIREBASE || !isFirebaseConfigured || !auth) {
+      setCurrentUser(null);
+      return;
+    }
     try {
       await signOut(auth);
     } catch (error) {

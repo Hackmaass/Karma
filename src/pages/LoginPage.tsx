@@ -1,9 +1,12 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Moon, Sun } from 'lucide-react';
+import { isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
 import { useAuth } from '../contexts/AuthContext';
-import { isFirebaseConfigured } from '../lib/firebase';
+import { useTheme } from '../contexts/ThemeContext';
+import { auth, isFirebaseConfigured } from '../lib/firebase';
+import { cn } from '../lib/utils';
 
 /** Drop PNG/WebP files here: public/login-screenshots/slide-1.png, slide-2.png, … */
 const SCREENSHOT_PATHS = [
@@ -33,16 +36,12 @@ const TESTIMONIALS = [
 export default function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { theme, setTheme, isDark } = useTheme();
   const mode = searchParams.get('mode') === 'signup' ? 'signup' : 'signin';
 
-  const {
-    currentUser,
-    loginWithGoogle,
-    loginWithMicrosoft,
-    sendSignInEmailLink,
-    completeSignInWithEmailLink,
-    isEmailLinkSignIn,
-  } = useAuth();
+  const { currentUser, loginWithGoogle, loginWithMicrosoft, sendSignInEmailLink, completeSignInWithEmailLink } =
+    useAuth();
+  const emailLinkHandled = useRef(false);
 
   const [email, setEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
@@ -60,23 +59,28 @@ export default function LoginPage() {
   }, [currentUser, navigate]);
 
   useEffect(() => {
-    if (!isFirebaseConfigured) return;
-    if (isEmailLinkSignIn()) {
-      const stored = window.localStorage.getItem('emailForSignIn');
-      if (stored) {
-        setEmailLoading(true);
-        completeSignInWithEmailLink(stored)
-          .then(() => navigate('/app', { replace: true }))
-          .catch((e) => {
-            console.error(e);
-            setError('This sign-in link is invalid or has expired. Request a new one.');
-          })
-          .finally(() => setEmailLoading(false));
-      } else {
-        setPendingLinkCompletion(true);
-      }
+    if (!isFirebaseConfigured || !auth || emailLinkHandled.current) return;
+    if (!isSignInWithEmailLink(auth, window.location.href)) return;
+    emailLinkHandled.current = true;
+    const stored = window.localStorage.getItem('emailForSignIn');
+    if (stored) {
+      setEmailLoading(true);
+      signInWithEmailLink(auth, stored, window.location.href)
+        .then(() => {
+          window.localStorage.removeItem('emailForSignIn');
+          window.history.replaceState({}, document.title, '/login');
+          navigate('/app', { replace: true });
+        })
+        .catch((e) => {
+          console.error(e);
+          emailLinkHandled.current = false;
+          setError('This sign-in link is invalid or has expired. Request a new one.');
+        })
+        .finally(() => setEmailLoading(false));
+    } else {
+      setPendingLinkCompletion(true);
     }
-  }, [completeSignInWithEmailLink, isEmailLinkSignIn, navigate]);
+  }, [navigate]);
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -196,13 +200,13 @@ export default function LoginPage() {
             We sent a sign-in link to <span className="font-medium text-black/70">{email}</span>. Open it on this
             device to continue.
           </p>
-          <Link
-            to="/login"
+          <button
+            type="button"
             className="text-sm font-medium text-black/60 hover:text-black underline underline-offset-2"
             onClick={() => setEmailSent(false)}
           >
             Use a different email
-          </Link>
+          </button>
         </div>
       </div>
     );

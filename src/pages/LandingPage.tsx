@@ -2,12 +2,13 @@ import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Activity, Brain, Briefcase, Moon, Sun, Zap, CalendarOff, Clock, Search, Plug, Shield, Globe, Users, ChevronRight } from 'lucide-react';
+import { FaSlack, FaMicrosoft, FaEnvelope, FaDiscord, FaLinkedin, FaGoogle } from 'react-icons/fa';
+import LogoLoop from '../components/LogoLoop';
 import { useAuth } from '../contexts/AuthContext';
-import { isFirebaseConfigured } from '../lib/firebase';
 import { useTheme } from '../contexts/ThemeContext';
 
 export default function LandingPage() {
-  const { loginWithGoogle, currentUser } = useAuth();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
   const { theme, setTheme, isDark } = useTheme();
 
@@ -16,14 +17,6 @@ export default function LandingPage() {
       navigate('/app');
     }
   }, [currentUser, navigate]);
-
-  const handleLogin = async () => {
-    if (!isFirebaseConfigured) {
-      navigate('/app');
-      return;
-    }
-    await loginWithGoogle();
-  };
 
   return (
     <div className="min-h-screen bg-page-bg text-page-text font-sans selection:bg-black selection:text-white">
@@ -46,15 +39,15 @@ export default function LandingPage() {
           >
             {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
-          <button onClick={handleLogin} className="text-sm font-medium text-black/60 hover:text-black transition-colors">
+          <Link to="/login" className="text-sm font-medium text-black/60 hover:text-black transition-colors">
             Sign In
-          </button>
-          <button
-            onClick={handleLogin}
+          </Link>
+          <Link
+            to="/login"
             className="text-sm font-medium bg-black text-white px-5 py-2.5 rounded-full hover:bg-black/90 transition-all active:scale-95"
           >
             Launch App
-          </button>
+          </Link>
         </div>
       </nav>
 
@@ -77,13 +70,13 @@ export default function LandingPage() {
             KarmaOS connects recruiting, HR operations, and workforce intelligence into a single AI-powered system. From sourcing on LinkedIn to managing leave to automating rules with plain English.
           </p>
           <div className="flex items-center justify-center gap-4">
-            <button
-              onClick={handleLogin}
+            <Link
+              to="/login"
               className="group flex items-center gap-2 text-base font-medium bg-black text-white px-8 py-4 rounded-full hover:bg-black/90 transition-all active:scale-95 shadow-xl shadow-black/10"
             >
               View Interactive Demo
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
+            </Link>
             <a href="#features" className="group flex items-center gap-2 text-base font-medium text-black/60 hover:text-black px-6 py-4 transition-all">
               See Features
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -290,28 +283,34 @@ export default function LandingPage() {
             </motion.div>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-6">
-            {[
-              { name: 'Slack', color: '#E01E5A' },
-              { name: 'Microsoft Teams', color: '#6264A7' },
-              { name: 'Outlook', color: '#0078D4' },
-              { name: 'Discord', color: '#5865F2' },
-              { name: 'Google Workspace', color: '#4285F4' },
-              { name: 'LinkedIn', color: '#0A66C2' },
-              { name: 'Naukri', color: '#4A00E0' },
-            ].map((int, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.05 }}
-                className="flex items-center gap-2 bg-page-bg border border-black/[0.04] rounded-full px-5 py-3 hover:shadow-md transition-all"
-              >
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: int.color }} />
-                <span className="text-sm font-medium text-black/70">{int.name}</span>
-              </motion.div>
-            ))}
+          <div className="mx-auto max-w-full overflow-hidden">
+            <LogoLoop
+              logos={[
+                { node: <FaSlack />, name: 'Slack', color: '#E01E5A' } as any,
+                { node: <FaMicrosoft />, name: 'Microsoft Teams', color: '#6264A7' } as any,
+                { node: <FaEnvelope />, name: 'Outlook', color: '#0078D4' } as any,
+                { node: <FaDiscord />, name: 'Discord', color: '#5865F2' } as any,
+                { node: <FaGoogle />, name: 'Google Workspace', color: '#4285F4' } as any,
+                { node: <FaLinkedin />, name: 'LinkedIn', color: '#0A66C2' } as any,
+                { node: <div className="font-bold font-serif text-[18px] leading-none">N</div>, name: 'Naukri', color: '#4A00E0' } as any,
+              ]}
+              speed={45}
+              direction="left"
+              logoHeight={48}
+              gap={24}
+              hoverSpeed={10}
+              fadeOut
+              fadeOutColor="var(--color-white, #ffffff)"
+              ariaLabel="Integrations loop"
+              renderItem={(item: any, key: string) => (
+                <div key={key} className="flex items-center gap-3 bg-page-bg border border-black/[0.04] rounded-full px-6 hover:shadow-lg transition-all h-full cursor-pointer hover:border-black/10">
+                  <div className="w-[1.2rem] h-[1.2rem] flex items-center justify-center shrink-0" style={{ color: item.color }}>
+                    {item.node}
+                  </div>
+                  <span className="text-[15px] font-medium text-black/70 whitespace-nowrap">{item.name}</span>
+                </div>
+              )}
+            />
           </div>
 
           <div className="mt-12 flex justify-center">
@@ -355,13 +354,13 @@ export default function LandingPage() {
         <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
           <h2 className="text-4xl md:text-5xl font-medium tracking-tight mb-4">Ready to run your workforce<br />on a single OS?</h2>
           <p className="text-lg text-white/50 font-light max-w-xl mx-auto mb-10">From hiring to operations to automation — KarmaOS is all you need.</p>
-          <button
-            onClick={handleLogin}
+          <Link
+            to="/login"
             className="group inline-flex items-center gap-2 text-base font-medium bg-white text-black px-8 py-4 rounded-full hover:bg-white/90 transition-all active:scale-95"
           >
             Launch KarmaOS
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
+          </Link>
         </motion.div>
       </section>
 

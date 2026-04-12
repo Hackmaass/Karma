@@ -14,6 +14,10 @@
   --color-page-text: #111111;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .dark {
   color-scheme: dark;
   --color-page-bg: #0A0A0A;

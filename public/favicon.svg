@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <g transform="translate(10, 10)">
+    <!-- Base White Circle -->
+    <circle cx="50" cy="50" r="50" fill="#ffffff" />
+    
+    <!-- Black region -->
+    <path d="M 50 0 
+             A 25 25 0 0 1 50 50 
+             A 25 25 0 0 0 50 100 
+             A 50 50 0 0 0 50 0 Z" 
+          fill="#000000" />
+          
+    <!-- Top Dot (Black) -->
+    <circle cx="50" cy="25" r="12" fill="#000000" />
+    
+    <!-- Bottom Dot (White) -->
+    <circle cx="50" cy="75" r="12" fill="#ffffff" />
+    
+    <!-- Thick Outer Ring -->
+    <circle cx="50" cy="50" r="50" fill="none" stroke="#000000" stroke-width="4" />
+  </g>
+</svg>

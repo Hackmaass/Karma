@@ -2,10 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, X, ArrowUp, Loader2 } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
-import { GoogleGenAI } from '@google/genai';
-
-// Initialize Gemini API
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+import { chatWithAssistant } from '../lib/gemini';
 
 type Message = { role: 'user' | 'assistant'; content: string };
 
@@ -22,11 +19,11 @@ export default function AiAssistant({ isOpen, onClose }: { isOpen: boolean; onCl
   let systemContext = "";
 
   if (location.pathname.includes('/app/team')) {
-    contextInsight = "Looking at the collaboration graph, I noticed Marketing is operating in isolation this week, and Design-to-Engineering handoffs are delayed. Would you like me to draft a quick alignment update?";
-    systemContext = "The user is viewing Team Insights. Marketing is isolated. Design-to-Engineering handoffs are delayed. You are the Founder Assistant agent within KarmaOS, an expert workforce intelligence AI.";
+    contextInsight = "Looking at the collaboration graph, I noticed several departments have high overload risk, and some teams have fragmented focus time. Would you like me to draft a quick alignment update?";
+    systemContext = "The user is viewing Team Insights. There are 20 departments with varying levels of deep work. Several employees show high overload risk due to excessive overtime. You are the Founder Assistant agent within KarmaOS, an expert workforce intelligence AI.";
     suggestedPrompts = [
-      "Why is Marketing isolated?",
-      "Show me the delayed handoffs.",
+      "Which departments are struggling?",
+      "Show me the overload risks.",
       "Draft an alignment update."
     ];
   } else if (location.pathname.includes('/app/talent')) {
@@ -37,29 +34,22 @@ export default function AiAssistant({ isOpen, onClose }: { isOpen: boolean; onCl
       "What is the status of the PM role?",
       "Any interview friction detected?"
     ];
-  } else if (location.pathname.includes('/app/employee/1')) {
-    contextInsight = "Alex scored 95% on the technical screen during hiring. His current output perfectly matches expectations. His high deep work ratio confirms the 'Maker' DNA profile identified by the Recruiter Agent.";
-    systemContext = "The user is viewing Alex Chen's profile (Senior Engineer). He scored 95% in hiring. His Work DNA is 'Maker'. He has 65% deep work and is highly productive. His post-hire performance matches his hiring signals. You are the Founder Assistant agent within KarmaOS.";
+  } else if (location.pathname.includes('/app/employee/')) {
+    const empId = location.pathname.split('/').pop();
+    contextInsight = `I'm analyzing employee #${empId}'s work patterns, comparing their hiring profile with current performance data. Ask me anything about their productivity, overload risk, or work DNA alignment.`;
+    systemContext = `The user is viewing an employee profile (ID: ${empId}). The employee's data includes work DNA, deep work ratio, overtime hours, and overload risk assessment. You are the Founder Assistant agent within KarmaOS.`;
     suggestedPrompts = [
-      "What is Alex currently building?",
-      "Does his output match his hiring score?",
-      "Are there any upcoming meetings I should cancel for him?"
-    ];
-  } else if (location.pathname.includes('/app/employee/2')) {
-    contextInsight = "Sarah scored highly on cross-functional communication during hiring. However, current data shows severe context-switching fatigue. The Operations Agent suggests she is trapped in low-impact alignment meetings.";
-    systemContext = "The user is viewing Sarah Miller's profile (Product Manager). She scored highly in communication during hiring. Her Work DNA is 'Synchronizer'. She has 18 meetings, high context-switching, and high burnout risk. There is a mismatch between her hiring expectations and her current reality. You are the Founder Assistant agent within KarmaOS.";
-    suggestedPrompts = [
-      "Which of Sarah's meetings can be async?",
-      "Why is there a mismatch with her hiring data?",
-      "Draft a message suggesting she take time off."
+      "Is this employee at risk of burnout?",
+      "Does their output match their hiring profile?",
+      "Suggest ways to improve their deep work time."
     ];
   } else {
     // Default / Dashboard
-    contextInsight = "I'm orchestrating data from the Recruiter Agent, Analyst Agent, and Operations Agent. Engineering is highly focused, but they are currently blocked on design approvals for the new checkout flow.";
-    systemContext = "The user is viewing the main Dashboard. You are the Founder Assistant agent within KarmaOS. KarmaOS is an AI Workforce Operating System that combines Talent Intelligence (hiring) and Work Intelligence (post-hire performance). Engineering is focused but blocked on Design approvals for the checkout flow. Keep responses concise, insightful, and focused on the connection between hiring and actual work output.";
+    contextInsight = "I'm orchestrating data from the Recruiter Agent, Analyst Agent, and Operations Agent across 689 employees and 20 departments. Ask me about bottlenecks, team health, or overload risks.";
+    systemContext = "The user is viewing the main Dashboard. You are the Founder Assistant agent within KarmaOS. KarmaOS is an AI Workforce Operating System that combines Talent Intelligence (hiring) and Work Intelligence (post-hire performance). The system tracks 689 employees across 20 departments. Keep responses concise, insightful, and focused on the connection between hiring and actual work output.";
     suggestedPrompts = [
-      "Which specific PRs are blocked?",
-      "Who is the bottleneck in Design?",
+      "Which teams have the lowest deep work?",
+      "Who is at highest burnout risk?",
       "Summarize this week's overall health."
     ];
   }
@@ -87,18 +77,8 @@ export default function AiAssistant({ isOpen, onClose }: { isOpen: boolean; onCl
     setIsLoading(true);
 
     try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: userMsg,
-        config: {
-          systemInstruction: `You are the Founder Assistant agent within KarmaOS, an expert workforce intelligence AI. 
-          Keep answers concise, professional, and insightful. Speak directly to the founder/manager.
-          Do not use heavy markdown formatting unless necessary.
-          Current Context: ${systemContext}`,
-        }
-      });
-
-      setMessages(prev => [...prev, { role: 'assistant', content: response.text || "I couldn't process that." }]);
+      const responseText = await chatWithAssistant(userMsg, systemContext);
+      setMessages(prev => [...prev, { role: 'assistant', content: responseText }]);
     } catch (error) {
       console.error("Gemini API Error:", error);
       setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I encountered an error connecting to my intelligence core." }]);

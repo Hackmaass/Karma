@@ -36,7 +36,7 @@ const TESTIMONIALS = [
 export default function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { theme, setTheme, isDark } = useTheme();
+  const { setTheme, isDark } = useTheme();
   const mode = searchParams.get('mode') === 'signup' ? 'signup' : 'signin';
 
   const { currentUser, loginWithGoogle, loginWithMicrosoft, sendSignInEmailLink, completeSignInWithEmailLink } =
@@ -156,31 +156,64 @@ export default function LoginPage() {
     }
   };
 
+  const themeToggle = (
+    <button
+      type="button"
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      className={cn(
+        'fixed top-5 right-5 z-50 p-2.5 rounded-full border backdrop-blur-sm transition-colors shadow-sm',
+        'border-black/10 bg-white/90 text-zinc-700 hover:text-zinc-950 hover:bg-white',
+        'dark:border-white/20 dark:bg-zinc-800 dark:text-amber-100 dark:shadow-black/40 dark:hover:bg-zinc-700 dark:hover:text-white'
+      )}
+      title={isDark ? 'Light mode' : 'Dark mode'}
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+    </button>
+  );
+
   if (pendingLinkCompletion) {
     return (
-      <div className="min-h-screen bg-[#F4F4F5] flex items-center justify-center p-6 font-sans">
-        <div className="w-full max-w-md bg-white rounded-2xl border border-black/[0.06] shadow-sm p-8">
-          <h1 className="text-xl font-semibold text-[#111] tracking-tight mb-1">Confirm your email</h1>
-          <p className="text-sm text-black/50 mb-6">
+      <div className="min-h-screen bg-page-bg text-page-text flex items-center justify-center p-6 font-sans selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
+        {themeToggle}
+        <div
+          className={cn(
+            'w-full max-w-md rounded-2xl border p-8 shadow-sm',
+            'bg-white border-black/[0.08] shadow-black/5',
+            'dark:bg-zinc-900 dark:border-white/15 dark:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.75)]'
+          )}
+        >
+          <h1 className="text-xl font-semibold tracking-tight mb-1 text-zinc-900 dark:text-white">Confirm your email</h1>
+          <p className="text-sm text-zinc-600 dark:text-zinc-300 mb-6">
             Enter the same address we sent the link to so we can finish signing you in.
           </p>
           <form onSubmit={handleConfirmEmailLink} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-black/70">Email address</label>
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Email address</label>
               <input
                 type="email"
                 value={confirmEmail}
                 onChange={(e) => setConfirmEmail(e.target.value)}
                 placeholder="you@company.com"
-                className="w-full rounded-xl border border-black/[0.08] bg-[#FAFAFA] px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/10"
+                className={cn(
+                  'w-full rounded-xl border px-4 py-3 text-sm outline-none transition-shadow',
+                  'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400',
+                  'focus:ring-2 focus:ring-zinc-900/15 focus:border-zinc-300',
+                  'dark:bg-zinc-950 dark:border-white/20 dark:text-white dark:placeholder:text-zinc-400',
+                  'dark:focus:ring-white/20 dark:focus:border-white/30'
+                )}
                 autoComplete="email"
               />
             </div>
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && (
+              <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+                {error}
+              </p>
+            )}
             <button
               type="submit"
               disabled={emailLoading}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#1a1a1a] text-white text-sm font-medium py-3 hover:bg-black/90 disabled:opacity-60"
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#1a1a1a] text-white text-sm font-medium py-3 hover:bg-black/90 disabled:opacity-60 dark:bg-white dark:text-zinc-950 dark:hover:bg-white/90"
             >
               {emailLoading ? 'Signing in…' : 'Continue'}
               <ArrowRight className="w-4 h-4" />
@@ -193,16 +226,24 @@ export default function LoginPage() {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen bg-[#F4F4F5] flex items-center justify-center p-6 font-sans">
-        <div className="w-full max-w-md bg-white rounded-2xl border border-black/[0.06] shadow-sm p-8 text-center">
-          <h1 className="text-xl font-semibold text-[#111] tracking-tight mb-2">Check your inbox</h1>
-          <p className="text-sm text-black/50 mb-6">
-            We sent a sign-in link to <span className="font-medium text-black/70">{email}</span>. Open it on this
-            device to continue.
+      <div className="min-h-screen bg-page-bg text-page-text flex items-center justify-center p-6 font-sans selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
+        {themeToggle}
+        <div
+          className={cn(
+            'w-full max-w-md rounded-2xl border p-8 text-center shadow-sm',
+            'bg-white border-black/[0.08] shadow-black/5',
+            'dark:bg-zinc-900 dark:border-white/15 dark:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.75)]'
+          )}
+        >
+          <h1 className="text-xl font-semibold tracking-tight mb-2 text-zinc-900 dark:text-white">Check your inbox</h1>
+          <p className="text-sm text-zinc-600 dark:text-zinc-300 mb-6">
+            We sent a sign-in link to{' '}
+            <span className="font-medium text-zinc-900 dark:text-white">{email}</span>. Open it on this device to
+            continue.
           </p>
           <button
             type="button"
-            className="text-sm font-medium text-black/60 hover:text-black underline underline-offset-2"
+            className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white underline underline-offset-2"
             onClick={() => setEmailSent(false)}
           >
             Use a different email
@@ -219,22 +260,30 @@ export default function LoginPage() {
       : 'Welcome back! Please sign in to continue.';
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-[#F4F4F5] font-sans text-[#111] selection:bg-black selection:text-white">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-page-bg text-page-text font-sans selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
+      {themeToggle}
       {/* Left: card */}
       <div className="flex-1 flex items-center justify-center p-6 lg:p-12 min-h-[50vh] lg:min-h-screen">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-[420px] bg-white rounded-2xl border border-black/[0.06] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.08)] p-8 sm:p-10"
+          className={cn(
+            'w-full max-w-[420px] rounded-2xl border p-8 sm:p-10',
+            'bg-white border-black/[0.08] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.1)]',
+            'dark:bg-zinc-900 dark:border-white/15 dark:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.75)]'
+          )}
         >
           <div className="mb-8">
-            <Link to="/" className="inline-flex items-center gap-2 text-black/40 hover:text-black/70 text-sm mb-8">
-              <span className="w-5 h-5 bg-black rounded-full" />
-              <span className="font-medium tracking-tight">KarmaOS</span>
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-sm mb-8 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white"
+            >
+              <span className="w-5 h-5 bg-zinc-900 dark:bg-white rounded-full shrink-0" />
+              <span className="font-medium tracking-tight text-zinc-900 dark:text-white">KarmaOS</span>
             </Link>
-            <h1 className="text-2xl font-semibold tracking-tight text-[#111] mb-2">{title}</h1>
-            <p className="text-sm text-black/45 leading-relaxed">{subtitle}</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white mb-2">{title}</h1>
+            <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">{subtitle}</p>
           </div>
 
           <div className="flex gap-3 mb-6">
@@ -242,7 +291,12 @@ export default function LoginPage() {
               type="button"
               onClick={() => handleOAuth('google')}
               disabled={oauthLoading !== null || emailLoading}
-              className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-black/[0.08] bg-white py-3 px-3 text-sm font-medium text-[#111] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
+              className={cn(
+                'flex-1 flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-medium transition-colors',
+                'border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50',
+                'disabled:opacity-60 disabled:grayscale-[0.3]',
+                'dark:border-white/20 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-800/80'
+              )}
             >
               <GoogleMark className="w-5 h-5 shrink-0" />
               Google
@@ -251,7 +305,12 @@ export default function LoginPage() {
               type="button"
               onClick={() => handleOAuth('microsoft')}
               disabled={oauthLoading !== null || emailLoading}
-              className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-black/[0.08] bg-white py-3 px-3 text-sm font-medium text-[#111] hover:bg-black/[0.02] disabled:opacity-50 transition-colors"
+              className={cn(
+                'flex-1 flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-medium transition-colors',
+                'border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50',
+                'disabled:opacity-60 disabled:grayscale-[0.3]',
+                'dark:border-white/20 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-800/80'
+              )}
             >
               <MicrosoftMark className="w-5 h-5 shrink-0" />
               Microsoft
@@ -259,14 +318,14 @@ export default function LoginPage() {
           </div>
 
           <div className="relative flex items-center gap-4 mb-6">
-            <div className="h-px flex-1 bg-black/[0.08]" />
-            <span className="text-xs text-black/35 font-medium">or</span>
-            <div className="h-px flex-1 bg-black/[0.08]" />
+            <div className="h-px flex-1 bg-zinc-200 dark:bg-white/15" />
+            <span className="text-xs font-medium text-zinc-400 dark:text-zinc-400">or</span>
+            <div className="h-px flex-1 bg-zinc-200 dark:bg-white/15" />
           </div>
 
           <form onSubmit={handleEmailContinue} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <label htmlFor="login-email" className="text-sm font-medium text-black/65">
+              <label htmlFor="login-email" className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
                 Email address
               </label>
               <input
@@ -275,26 +334,39 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
-                className="w-full rounded-xl border border-black/[0.08] bg-[#FAFAFA] px-4 py-3 text-sm outline-none transition-shadow focus:ring-2 focus:ring-black/[0.08] placeholder:text-black/30"
+                className={cn(
+                  'w-full rounded-xl border px-4 py-3 text-sm outline-none transition-shadow',
+                  'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400',
+                  'focus:ring-2 focus:ring-zinc-900/15 focus:border-zinc-300',
+                  'dark:bg-zinc-950 dark:border-white/20 dark:text-white dark:placeholder:text-zinc-400',
+                  'dark:focus:ring-white/20 dark:focus:border-white/30'
+                )}
                 autoComplete="email"
               />
             </div>
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && (
+              <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+                {error}
+              </p>
+            )}
             <button
               type="submit"
               disabled={emailLoading || oauthLoading !== null}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#1a1a1a] text-white text-sm font-medium py-3.5 hover:bg-black/90 disabled:opacity-50 transition-colors"
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#1a1a1a] text-white text-sm font-medium py-3.5 hover:bg-black/90 disabled:opacity-50 transition-colors dark:bg-white dark:text-zinc-950 dark:hover:bg-white/90"
             >
               {emailLoading ? 'Sending link…' : 'Continue'}
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-black/[0.06] text-center text-sm text-black/45">
+          <div className="mt-8 pt-6 border-t border-black/[0.06] dark:border-white/[0.08] text-center text-sm text-black/50 dark:text-white/50">
             {mode === 'signup' ? (
               <>
                 Already have an account?{' '}
-                <Link to="/login" className="font-semibold text-[#111] hover:underline underline-offset-2">
+                <Link
+                  to="/login"
+                  className="font-semibold text-page-text hover:underline underline-offset-2"
+                >
                   Sign in
                 </Link>
               </>
@@ -303,7 +375,7 @@ export default function LoginPage() {
                 Don&apos;t have an account?{' '}
                 <Link
                   to="/login?mode=signup"
-                  className="font-semibold text-[#111] hover:underline underline-offset-2"
+                  className="font-semibold text-page-text hover:underline underline-offset-2"
                 >
                   Sign up
                 </Link>
@@ -311,18 +383,24 @@ export default function LoginPage() {
             )}
           </div>
 
-          <p className="mt-6 text-center text-[11px] text-black/30">
+          <p className="mt-6 text-center text-[11px] text-black/35 dark:text-white/35">
             Secured with Firebase Authentication
           </p>
         </motion.div>
       </div>
 
       {/* Right: testimonial + carousel */}
-      <div className="hidden lg:flex flex-1 flex-col justify-between p-12 xl:p-16 bg-[#ECECED] border-l border-black/[0.05] min-h-screen max-w-[52%]">
+      <div
+        className={cn(
+          'hidden lg:flex flex-1 flex-col justify-between p-12 xl:p-16 min-h-screen max-w-[52%] border-l',
+          'bg-[#ECECED] border-black/[0.06]',
+          'dark:bg-zinc-950 dark:border-white/[0.06]'
+        )}
+      >
         <div className="max-w-lg">
           <div className="flex gap-1 mb-4" aria-hidden>
             {[1, 2, 3, 4, 5].map((i) => (
-              <span key={i} className="text-[#111] text-lg leading-none">
+              <span key={i} className="text-page-text text-lg leading-none opacity-90">
                 ★
               </span>
             ))}
@@ -335,16 +413,26 @@ export default function LoginPage() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.35 }}
             >
-              <p className="text-lg font-medium text-[#111] leading-snug tracking-tight mb-4">
+              <p className="text-lg font-medium text-page-text leading-snug tracking-tight mb-4">
                 &ldquo;{TESTIMONIALS[slide % TESTIMONIALS.length].quote}&rdquo;
               </p>
-              <p className="text-sm font-semibold text-[#111]">{TESTIMONIALS[slide % TESTIMONIALS.length].name}</p>
-              <p className="text-sm text-black/45">{TESTIMONIALS[slide % TESTIMONIALS.length].role}</p>
+              <p className="text-sm font-semibold text-page-text">
+                {TESTIMONIALS[slide % TESTIMONIALS.length].name}
+              </p>
+              <p className="text-sm text-black/50 dark:text-white/50">
+                {TESTIMONIALS[slide % TESTIMONIALS.length].role}
+              </p>
             </motion.div>
           </AnimatePresence>
         </div>
 
-        <div className="relative mt-8 rounded-2xl border border-black/[0.06] bg-white shadow-[0_20px_50px_-20px_rgba(0,0,0,0.15)] overflow-hidden aspect-[16/10] max-h-[min(420px,42vh)]">
+        <div
+          className={cn(
+            'relative mt-8 rounded-2xl border overflow-hidden aspect-[16/10] max-h-[min(420px,42vh)]',
+            'border-black/[0.06] bg-white shadow-[0_20px_50px_-20px_rgba(0,0,0,0.15)]',
+            'dark:border-white/[0.1] dark:bg-zinc-900/50 dark:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)]'
+          )}
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={slide}
@@ -364,9 +452,12 @@ export default function LoginPage() {
                 key={i}
                 type="button"
                 onClick={() => setSlide(i)}
-                className={`h-2 rounded-full transition-all ${
-                  i === slide ? 'w-6 bg-[#111]' : 'w-2 bg-black/20 hover:bg-black/35'
-                }`}
+                className={cn(
+                  'h-2 rounded-full transition-all',
+                  i === slide
+                    ? 'w-6 bg-[#111] dark:bg-white'
+                    : 'w-2 bg-black/25 hover:bg-black/40 dark:bg-white/25 dark:hover:bg-white/45'
+                )}
                 aria-label={`Show screenshot ${i + 1}`}
               />
             ))}
@@ -374,7 +465,11 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => goSlide(-1)}
-            className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/90 border border-black/[0.08] shadow-sm flex items-center justify-center text-black/60 hover:text-black hover:bg-white"
+            className={cn(
+              'absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full border shadow-sm flex items-center justify-center transition-colors',
+              'bg-white/95 border-black/[0.08] text-black/65 hover:text-black hover:bg-white',
+              'dark:bg-zinc-800/95 dark:border-white/[0.12] dark:text-white/70 dark:hover:text-white dark:hover:bg-zinc-800'
+            )}
             aria-label="Previous screenshot"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -382,7 +477,11 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => goSlide(1)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/90 border border-black/[0.08] shadow-sm flex items-center justify-center text-black/60 hover:text-black hover:bg-white"
+            className={cn(
+              'absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full border shadow-sm flex items-center justify-center transition-colors',
+              'bg-white/95 border-black/[0.08] text-black/65 hover:text-black hover:bg-white',
+              'dark:bg-zinc-800/95 dark:border-white/[0.12] dark:text-white/70 dark:hover:text-white dark:hover:bg-zinc-800'
+            )}
             aria-label="Next screenshot"
           >
             <ChevronRight className="w-5 h-5" />
@@ -398,10 +497,12 @@ function ScreenshotSlide({ src, index }: { src: string; index: number }) {
 
   if (failed) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-black/[0.04] to-black/[0.08] p-8 text-center">
-        <p className="text-sm font-medium text-black/50 mb-1">Screenshot {index + 1}</p>
-        <p className="text-xs text-black/35 max-w-xs">
-          Add your image at <code className="text-black/45">public{src}</code> — it will appear here automatically.
+      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-black/[0.04] to-black/[0.08] dark:from-white/[0.04] dark:to-white/[0.07] p-8 text-center">
+        <p className="text-sm font-medium text-black/55 dark:text-white/55 mb-1">Screenshot {index + 1}</p>
+        <p className="text-xs text-black/40 dark:text-white/40 max-w-xs">
+          Add your image at{' '}
+          <code className="text-black/55 dark:text-white/55 font-mono text-[11px]">public{src}</code> — it will appear
+          here automatically.
         </p>
       </div>
     );

@@ -16,6 +16,7 @@ import LeaveManagement from './pages/LeaveManagement';
 import Attendance from './pages/Attendance';
 import Automation from './pages/Automation';
 import HiringAutomation from './pages/HiringAutomation';
+import EmployeeDataUpload from './pages/EmployeeDataUpload';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { currentUser } = useAuth();
@@ -70,6 +71,7 @@ function AnimatedRoutes() {
           <Route path="attendance" element={<Attendance />} />
           <Route path="automation" element={<Automation />} />
           <Route path="hiring" element={<HiringAutomation />} />
+          <Route path="employees/upload" element={<EmployeeDataUpload />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>

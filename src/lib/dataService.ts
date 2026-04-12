@@ -1,6 +1,9 @@
 // src/lib/dataService.ts
 // This service fetches data from the server's Excel-backed API.
-// The server reads Employees.xlsx and enriches each record with synthetic work pattern data.
+// The server reads public/Employees.xlsx and enriches each record with synthetic work pattern data.
+// A client-side fallback is also implemented for static hosting environments like Vercel.
+
+import * as XLSX from 'xlsx';
 
 export interface EnrichedEmployee {
   id: number;
@@ -48,6 +51,143 @@ export interface WorkforceData {
   }[];
 }
 
+interface RawEmployee {
+  No: number;
+  'First Name': string;
+  'Last Name': string;
+  Gender: string;
+  'Start Date': string;
+  Years: number;
+  Department: string;
+  Country: string;
+  Center: string;
+  'Monthly Salary': number;
+  'Annual Salary': number;
+  'Job Rate': number;
+  'Sick Leaves': number;
+  'Unpaid Leaves': number;
+  'Overtime Hours': number;
+}
+
+function deriveRole(department: string, years: number): string {
+  const seniorThreshold = 3;
+  const prefix = years >= seniorThreshold ? 'Senior' : '';
+  const roleMap: Record<string, string> = {
+    'IT': 'Software Engineer',
+    'Manufacturing': 'Production Specialist',
+    'Manufacturing Admin': 'Production Admin',
+    'Quality Control': 'QC Analyst',
+    'Quality Assurance': 'QA Engineer',
+    'Sales': 'Sales Executive',
+    'Marketing': 'Marketing Specialist',
+    'Account Management': 'Account Manager',
+    'Creative': 'Creative Designer',
+    'Facilities/Engineering': 'Facilities Engineer',
+    'Environmental Health/Safety': 'EHS Specialist',
+    'Environmental Compliance': 'Compliance Officer',
+    'Product Development': 'Product Developer',
+    'Research Center': 'Research Analyst',
+    'Training': 'Training Coordinator',
+    'Green Building': 'Green Building Specialist',
+    'Major Mfg Projects': 'Project Manager',
+    'Professional Training Group': 'Training Lead',
+  };
+  const base = roleMap[department] || `${department} Specialist`;
+  return prefix ? `${prefix} ${base}` : base;
+}
+
+function deriveWorkDna(department: string, overtimeHours: number, jobRate: number): string {
+  const makerDepts = ['IT', 'Manufacturing', 'Product Development', 'Research Center', 'Creative', 'Green Building'];
+  const syncDepts = ['Account Management', 'Sales', 'Marketing', 'Training', 'Professional Training Group', 'Major Mfg Projects'];
+
+  if (makerDepts.includes(department)) {
+    return overtimeHours > 50 ? 'Maker (Overclocked)' : 'Maker';
+  }
+  if (syncDepts.includes(department)) {
+    return 'Synchronizer';
+  }
+  return 'Operator';
+}
+
+function enrichEmployee(raw: RawEmployee): EnrichedEmployee {
+  const overtime = raw['Overtime Hours'] || 0;
+  const sickLeaves = raw['Sick Leaves'] || 0;
+  const jobRate = raw['Job Rate'] || 3;
+  const years = raw['Years'] || 0;
+  const department = raw['Department'] || 'General';
+
+  const deepWorkBase = Math.min(85, Math.max(10, 70 - (overtime * 0.3) + (jobRate * 5)));
+  const deepWorkRatio = `${Math.round(deepWorkBase)}%`;
+
+  const syncDepts = ['Account Management', 'Sales', 'Marketing', 'Training', 'Major Mfg Projects'];
+  const pseudoRandom = ((raw.No * 17 + jobRate * 11) % 15);
+  const meetingBase = syncDepts.includes(department) ? 35 + pseudoRandom : 10 + pseudoRandom;
+  const meetingLoad = `${Math.round(meetingBase)}%`;
+
+  const commStyles = syncDepts.includes(department)
+    ? ['Heavy Slack usage, real-time coordination', 'Frequent cross-team meetings', 'High sync communication via chat']
+    : ['Mostly async via PRs and docs', 'Minimal sync, prefers written updates', 'Async-first, occasional standups'];
+  const communicationStyle = commStyles[Math.floor(Math.abs(raw.No * 7) % commStyles.length)];
+
+  const outputOptions = overtime > 30
+    ? ['High output but working extended hours', 'Elevated delivery pace, sustainability at risk', 'Strong throughput, monitoring for burnout']
+    : ['Consistent and sustainable output', 'Steady contribution within normal hours', 'Balanced workload with quality focus'];
+  const recentOutput = outputOptions[Math.floor(Math.abs(raw.No * 13) % outputOptions.length)];
+
+  const focusHours = Math.max(0.5, 4 - (overtime * 0.02) - (sickLeaves * 0.1));
+  const focusBlocks = `Averaging ${focusHours.toFixed(1)} hours uninterrupted`;
+
+  let overloadRisk: 'low' | 'medium' | 'high' = 'low';
+  if (overtime > 50 || sickLeaves >= 5) overloadRisk = 'high';
+  else if (overtime > 20 || sickLeaves >= 3) overloadRisk = 'medium';
+
+  const isDev = department === 'IT' || department === 'Product Development' || department === 'Research Center';
+  let githubData = {};
+  
+  if (isDev) {
+    const handle = `${raw['First Name'].toLowerCase()}-${raw['Last Name'].toLowerCase()}`;
+    const commits = 20 + Math.floor(Math.abs(raw.No * 19) % 80);
+    const prs = 5 + Math.floor(Math.abs(raw.No * 7) % 15);
+    const reviewBase = 60 + Math.floor(Math.abs(raw.No * 3) % 40);
+    githubData = {
+      githubHandle: handle,
+      commitsLast30Days: commits,
+      prsOpened: prs,
+      codeReviewRatio: `${reviewBase}%`,
+    };
+  }
+
+  return {
+    id: raw.No,
+    firstName: raw['First Name'],
+    lastName: raw['Last Name'],
+    name: `${raw['First Name']} ${raw['Last Name']}`,
+    gender: raw.Gender,
+    startDate: typeof raw['Start Date'] === 'number'
+      ? new Date((raw['Start Date'] - 25569) * 86400 * 1000).toLocaleDateString('en-US')
+      : String(raw['Start Date']),
+    yearsAtCompany: years,
+    department,
+    country: raw.Country,
+    center: raw.Center,
+    monthlySalary: raw['Monthly Salary'],
+    annualSalary: raw['Annual Salary'],
+    jobRate,
+    sickLeaves,
+    unpaidLeaves: raw['Unpaid Leaves'] || 0,
+    overtimeHours: overtime,
+    role: deriveRole(department, years),
+    workDna: deriveWorkDna(department, overtime, jobRate),
+    deepWorkRatio,
+    meetingLoad,
+    communicationStyle,
+    recentOutput,
+    focusBlocks,
+    overloadRisk,
+    ...githubData,
+  };
+}
+
 export const mockTalentData = {
   pipeline: {
     totalScreened: 42,
@@ -87,14 +227,58 @@ export async function fetchWorkforceData(): Promise<WorkforceData> {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return await response.json();
   } catch (e) {
-    console.error("Failed to fetch workforce data from API:", e);
-    // Minimal fallback so the page doesn't crash
-    return {
-      total: 0,
-      employees: [],
-      departments: {},
-      alerts: [],
-    };
+    console.warn("Failed to fetch workforce data from API, falling back to local file...", e);
+    
+    // Client-side fallback for static deployments (Vercel)
+    try {
+      const response = await fetch('/Employees.xlsx');
+      if (!response.ok) throw new Error("Could not fetch Employees.xlsx");
+      
+      const arrayBuffer = await response.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const rawData: RawEmployee[] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+      
+      const employees = rawData.map(enrichEmployee);
+
+      const departments: Record<string, DepartmentStats> = {};
+      for (const emp of employees) {
+        if (!departments[emp.department]) {
+          departments[emp.department] = { count: 0, avgDeepWork: 0, highRiskCount: 0, totalOvertime: 0 };
+        }
+        const dept = departments[emp.department];
+        dept.count++;
+        dept.avgDeepWork += parseInt(emp.deepWorkRatio);
+        dept.totalOvertime += emp.overtimeHours;
+        if (emp.overloadRisk === 'high') dept.highRiskCount++;
+      }
+
+      for (const key of Object.keys(departments)) {
+        departments[key].avgDeepWork = Math.round(departments[key].avgDeepWork / departments[key].count);
+      }
+
+      const highRiskEmployees = employees.filter(e => e.overloadRisk === 'high');
+
+      return {
+        total: employees.length,
+        employees,
+        departments,
+        alerts: highRiskEmployees.slice(0, 5).map(e => ({
+          employee: e.name,
+          issue: `${e.overtimeHours}h overtime, ${e.sickLeaves} sick leaves`,
+          risk: e.overloadRisk,
+          department: e.department,
+        })),
+      };
+    } catch (fallbackError) {
+      console.error("Client-side fallback failed:", fallbackError);
+      return {
+        total: 0,
+        employees: [],
+        departments: {},
+        alerts: [],
+      };
+    }
   }
 }
 

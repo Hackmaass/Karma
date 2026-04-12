@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { LayoutDashboard, Users, User, Settings, Search, Sparkles, LogOut, Briefcase, ChevronDown, ChevronUp, Moon, Sun, CalendarOff, Clock, Zap } from 'lucide-react';
+import { LayoutDashboard, Users, User, Settings, Search, Sparkles, LogOut, Briefcase, ChevronDown, ChevronUp, Moon, Sun, CalendarOff, Clock, Zap, UploadCloud } from 'lucide-react';
 import { cn } from '../lib/utils';
 import AiAssistant from '../components/AiAssistant';
 import { useAuth } from '../contexts/AuthContext';
@@ -60,6 +60,7 @@ export default function DashboardLayout() {
           <NavItem to="/app/leave" icon={<CalendarOff className="w-4 h-4" />} label="Leave Management" />
           <NavItem to="/app/attendance" icon={<Clock className="w-4 h-4" />} label="Attendance" />
           <NavItem to="/app/automation" icon={<Zap className="w-4 h-4" />} label="Automation" />
+          <NavItem to="/app/employees/upload" icon={<UploadCloud className="w-4 h-4" />} label="Employee upload" />
           
           <div className="text-xs font-medium text-black/40 uppercase tracking-wider mb-2 mt-8 px-2 flex items-center justify-between">
             <span>Work DNA Profiles</span>
@@ -149,11 +150,20 @@ export default function DashboardLayout() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => navigate('/app/employees/upload')}
+              className="flex items-center gap-2 text-sm font-medium bg-black text-white hover:bg-black/90 dark:bg-white dark:text-zinc-950 dark:hover:bg-white/90 px-3 sm:px-4 py-2 rounded-full transition-colors shrink-0"
+            >
+              <UploadCloud className="w-4 h-4 shrink-0" />
+              <span className="max-sm:hidden">Upload employee data</span>
+              <span className="sm:hidden">Upload</span>
+            </button>
             <button 
               onClick={() => setIsAiOpen(true)}
-              className="flex items-center gap-2 text-sm font-medium bg-black/[0.03] hover:bg-black/[0.06] px-4 py-2 rounded-full transition-colors"
+              className="flex items-center gap-2 text-sm font-medium bg-black/[0.03] hover:bg-black/[0.06] dark:bg-white/[0.08] dark:hover:bg-white/[0.12] px-4 py-2 rounded-full transition-colors"
             >
-              <Sparkles className="w-4 h-4 text-black/60" />
+              <Sparkles className="w-4 h-4 text-black/60 dark:text-white/60" />
               <span>Founder Assistant</span>
             </button>
             <button 

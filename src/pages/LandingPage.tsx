@@ -313,24 +313,7 @@ export default function LandingPage() {
             />
           </div>
 
-          <div className="mt-12 flex justify-center">
-            <div className="flex items-center gap-8 text-center">
-              <div>
-                <div className="text-3xl font-medium tracking-tight">50+</div>
-                <div className="text-xs text-black/40 mt-1">Employees managed</div>
-              </div>
-              <div className="w-px h-12 bg-black/[0.06]" />
-              <div>
-                <div className="text-3xl font-medium tracking-tight">7</div>
-                <div className="text-xs text-black/40 mt-1">Integrations</div>
-              </div>
-              <div className="w-px h-12 bg-black/[0.06]" />
-              <div>
-                <div className="text-3xl font-medium tracking-tight">∞</div>
-                <div className="text-xs text-black/40 mt-1">Automation rules</div>
-              </div>
-            </div>
-          </div>
+
         </div>
       </section>
 

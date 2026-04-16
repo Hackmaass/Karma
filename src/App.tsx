@@ -16,6 +16,7 @@ import Attendance from './pages/Attendance';
 import Automation from './pages/Automation';
 import HiringAutomation from './pages/HiringAutomation';
 import EmployeeDataUpload from './pages/EmployeeDataUpload';
+import { OnboardingTourProvider } from './contexts/OnboardingTourContext';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { currentUser } = useAuth();
@@ -82,7 +83,9 @@ export default function App() {
   return (
     <AuthProvider>
       <Router>
-        <AnimatedRoutes />
+        <OnboardingTourProvider>
+          <AnimatedRoutes />
+        </OnboardingTourProvider>
       </Router>
     </AuthProvider>
   );

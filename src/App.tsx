@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { isFirebaseConfigured } from './lib/firebase';
 
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -21,7 +20,7 @@ import EmployeeDataUpload from './pages/EmployeeDataUpload';
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { currentUser } = useAuth();
   
-  if (isFirebaseConfigured && !currentUser) {
+  if (!currentUser) {
     return <Navigate to="/login" replace />;
   }
   

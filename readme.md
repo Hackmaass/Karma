@@ -16,11 +16,21 @@
 
 Most productivity tools measure **activity**—keystrokes, hours logged, or messages sent. KarmaOS is different. It measures **impact** and **friction**. 
 
-By passively reading *metadata* across your tools (Slack, GitHub, Calendar, Jira) and applying intelligent classification and LLM reasoning via **Google Gemini**, KarmaOS turns raw signals into clear, actionable human narratives. 
+KarmaOS is a passive, zero-friction intelligence layer that reads *metadata* across your tools (Slack, GitHub, Calendar, Jira). It doesn't surveil message content—it analyzes patterns (e.g., context switching, thread density, PR review times) and correctly classifies work patterns into distinct states: **Deep Work, Shallow Work, and Coordination**.
 
-Instead of showing you a complex dashboard of charts, it simply tells you: *"Good morning. Your team is highly focused today, but engineering is currently blocked on design approvals for the new checkout flow."*
+By applying intelligent classification and LLM reasoning via **Google Gemini**, KarmaOS turns these raw metadata signals into clear, actionable human narratives. Instead of forcing you to interpret a chaotic dashboard of charts, it acts as a **thinking partner**, proactively telling you where the friction is: *"Good morning. Your team is highly focused today, but engineering is currently blocked on design approvals for the new checkout flow."*
 
-**KarmaOS v2** extends this intelligence layer with a complete **HR Operations backbone** and an **Agentic Automation Engine**, making it a true workforce operating system.
+**KarmaOS v2** extends this intelligence layer with a complete **HR Operations backbone** and an **Agentic Automation Engine**, transforming it from an analytics tool into a complete, modern workforce operating system.
+
+---
+
+## 🚀 Key Capabilities & Differentiation
+
+- **Activity vs. Impact:** KarmaOS understands that 100 Slack messages could signify high team alignment, or a completely broken process. It measures the *quality* of time, not just the quantity.
+- **Quantifying "Invisible Work":** KarmaOS detects workflow bottlenecks that happen between tools (e.g., a ticket that sits in review while 50 Slack messages are exchanged about it), pinpointing systemic friction rather than blaming individuals.
+- **Zero-Friction Passive Intelligence:** No timers, no forms, no status updates. KarmaOS operates completely passively in the background, requiring absolutely zero behavioral changes from your team.
+- **Proactive Burnout Prevention:** By tracking context switching and after-hours coordination, KarmaOS can objectively identify overload risks *before* burnout occurs, shifting management from reactive to proactive.
+- **Synthesized AI Narratives, Not Fake Charts:** We strictly avoid "Fake AI." Models aren't used to draw charts or tally numbers. We use deterministic algorithms for classification, and rely on Gemini *exclusively* for synthesis—taking disparate data points and telling the objective human story behind them.
 
 ---
 
